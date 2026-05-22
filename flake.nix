@@ -67,14 +67,18 @@
 
             programs.git = {
               enable = true;
-              settings {
-                user {
+              settings = {
+                user = {
                   name = "Alex Nathanail";
                   email = "7809723+adnathanail@users.noreply.github.com";
                 };
                 init.defaultBranch = "main";
                 pull.rebase = true;
               };
+            };
+
+            programs.vscode = {
+              enable = true;
             };
           };
         }
