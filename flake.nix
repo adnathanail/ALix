@@ -50,6 +50,7 @@
         {
           home-manager.useGlobalPkgs = true;     # use the overlaid pkgs above
           home-manager.useUserPackages = true;
+          home-manager.backupFileExtension = "hm-backup";
 
           home-manager.users.${username} = import ./home.nix;
         }

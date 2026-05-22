@@ -24,6 +24,8 @@ sudo darwin-rebuild switch --flake ~/.config/nix-darwin
 - Update **one** input then rebuild: `nix flake update <input>` (e.g. `nixpkgs-unstable`).
 - Update **everything**: `nix flake update`.
 
+**Rule: DO NOT REBUILD - ASK THE USER TO DO SO**
+
 ## Key decisions and rationale
 
 ### Lix instead of upstream Nix
