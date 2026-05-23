@@ -8,8 +8,8 @@
     # settings = { theme = "dark"; };
   };
 
-  # Stop Claude Code self-updating into the read-only store; you
-  # update it via Nix instead (see below).
+  # Stop Claude Code self-updating into the read-only store;
+  # you update it via Nix instead.
   home.sessionVariables.DISABLE_AUTOUPDATER = "1";
 
   programs.git = {

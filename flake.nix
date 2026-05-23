@@ -14,8 +14,8 @@
 
   outputs = inputs@{ self, nix-darwin, nixpkgs, nixpkgs-unstable, home-manager }:
   let
-    username = "adnathanail";        # run `whoami` to confirm
-    hostname = "Alexs-MacBook-Pro";
+    username = "adnathanail";        # `whoami`
+    hostname = "Alexs-MacBook-Pro";  # `scutil --get LocalHostName`
 
     # Pull claude-code (and ONLY claude-code) from unstable.
     unstableOverlay = final: prev: {
@@ -42,7 +42,10 @@
 
           users.users.${username}.home = "/Users/${username}";
 
-          environment.systemPackages = [ pkgs.htop ];
+          # Enable Touch ID for sudo
+          security.pam.services.sudo_local.touchIdAuth = true;
+
+          environment.systemPackages = [ ];
         })
 
         # ── Home Manager + Claude Code ──────────────────────────
