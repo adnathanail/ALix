@@ -30,6 +30,9 @@ nix run nix-darwin/master#darwin-rebuild -- switch --flake ~/.config/nix-darwin
 
 - Claude Code
 - VS Code
+    - Plugins:
+        - Nix IDE
+        - Dev Containers
 - 1Password
 - PyCharm
     - Disable in-app updater on first launch

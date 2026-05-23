@@ -58,6 +58,7 @@
     profiles.default = {
       extensions = with pkgs.vscode-extensions; [
         jnoortheen.nix-ide
+        ms-vscode-remote.remote-containers
       ];
       userSettings = {
         "nix.enableLanguageServer" = true;
