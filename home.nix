@@ -40,6 +40,14 @@
   home.file."Library/Application Support/JetBrains/PyCharm2026.1/keymaps/custom-keymap.xml".source =
     ./pycharm/custom-keymap.xml;
 
+  # Ghostty config. The app itself comes from Homebrew (see flake.nix), but
+  # the config file is Nix-owned so the first-launch auto-update prompt is
+  # suppressed declaratively. Edits made in the app won't persist — change
+  # this block and rebuild.
+  xdg.configFile."ghostty/config".text = ''
+    auto-update = off
+  '';
+
   programs.vscode = {
     enable = true;
     profiles.default = {

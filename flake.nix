@@ -23,7 +23,7 @@
     unstableOverlay = final: prev:
       let
         unstable = import nixpkgs-unstable {
-          inherit (prev) system;
+          system = prev.stdenv.hostPlatform.system;
           config.allowUnfree = true;   # claude-code, pycharm are unfree
         };
       in {

@@ -188,10 +188,13 @@ activate.
   has lagged or broken across releases. The Homebrew cask ships the upstream signed `.app` into
   `/Applications` as-is. (Revisit moving to Nix once `pkgs.ghostty` on `aarch64-darwin` is
   reliable.)
-- Configuration lives at `~/Library/Application Support/com.mitchellh.ghostty/config` (or
-  `~/.config/ghostty/config`), **not Nix-managed**. If you ever want it declarative, the HM
-  `programs.ghostty` module exists on HM `master` — check availability on `release-25.11`
-  before relying on it.
+- Configuration: `~/.config/ghostty/config` is **Nix-owned** via `xdg.configFile` in `home.nix`
+  (Ghostty reads both the XDG path and `~/Library/Application Support/com.mitchellh.ghostty/config`
+  on macOS). Editing the config inside the app will fail silently — change `home.nix` and
+  rebuild instead. `auto-update = off` is set there to suppress Sparkle's first-launch prompt;
+  updates flow through Homebrew on `darwin-rebuild` instead. If config grows, consider migrating
+  to the HM `programs.ghostty` module (lives on HM `master` — verify availability on
+  `release-25.11` first).
 - Updates via Nix activation (`homebrew.onActivation.upgrade = true` refreshes the cask). Don't
   use Ghostty's in-app updater.
 
