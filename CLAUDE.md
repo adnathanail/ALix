@@ -88,12 +88,22 @@ activate.
   the read-only store. **Update it through Nix**, never its built-in updater.
 - The `claude symlink points to an invalid binary` warning is a harmless false positive: Nix wraps
   it as a script rather than the large binary Claude Code expects.
+- IDE integrations are also Nix-managed: the **VS Code** extension comes from
+  `pkgs.vscode-extensions.anthropic.claude-code` (see the VS Code section); the **PyCharm**
+  plugin is wrapped into the IDE bundle via `jetbrains.plugins.addPlugins` (see the PyCharm
+  Professional section). Both update independently of the CLI — bumping `claude-code` doesn't
+  bump them.
 
 ### VS Code
 - Managed by `programs.vscode` (declarative) under `profiles.default`.
 - `settings.json` is now **Nix-owned** — editing it in-app won't persist. Change `userSettings` in
   `home.nix` instead.
 - Extensions are declared in `profiles.default.extensions` from `pkgs.vscode-extensions`.
+  The marketplace overlay is large but well-curated — most extensions resolve as
+  `<publisher>.<name>` (e.g. `anthropic.claude-code`). If an extension isn't in the overlay
+  set, use `pkgs.vscode-utils.extensionFromVscodeMarketplace` with the publisher, name, and
+  version + hash. **Disable VS Code's in-app extension updater** for Nix-managed extensions
+  — the store is read-only; bump versions through Nix instead.
 - The app installs to `~/Applications/Home Manager Apps/` (not `/Applications`); Spotlight and
   `open -a "Visual Studio Code"` still find it there.
 - First eval after adding it is slow/heavy because the Marketplace overlay set is enormous;
@@ -208,8 +218,22 @@ activate.
 - **Disable the in-app updater** on first launch: Settings → Appearance & Behavior → System
   Settings → Updates → uncheck "Check IDE updates for…". The store is read-only, so any
   attempt to apply an update will fail. Update via Nix instead.
-- Project SDKs, plugins, and per-project run configs are not Nix-managed — they live under
+- Project SDKs and per-project run configs are not Nix-managed — they live under
   `~/Library/Application Support/JetBrains/PyCharm<version>/` and the project's `.idea/`.
+- **Plugins are Nix-managed** via `jetbrains.plugins.addPlugins`, which wraps the IDE
+  derivation and links plugin contents into its `plugins/` directory at build time. The
+  store path of the wrapped IDE changes (becomes `pycharm-with-plugins-…`), so the first
+  rebuild after adding/removing a plugin re-links `~/Applications/Home Manager Apps/PyCharm
+  Professional Edition.app` — Spotlight may briefly re-index. The wrapper requires a
+  **derivation**, not a string ID (the old API was removed); use `pkgs.fetchzip` against
+  the JetBrains Marketplace `.zip` URL and pin its SRI hash. Find latest updates and check
+  build compatibility (`since`/`until`) via the JSON API at
+  `https://plugins.jetbrains.com/api/plugins/<id>/updates`. Update a plugin by bumping
+  `url` + `hash` in `home.nix` — **disable the IDE's own plugin auto-updater**, it tries to
+  write into the read-only store. Plugins not added through Nix (installed in-IDE) keep
+  working and live under `~/Library/Application Support/JetBrains/PyCharm<version>/plugins/`,
+  but mixing the two means the in-IDE plugin UI shows Nix-managed plugins as bundled and
+  refuses to disable/uninstall them. Currently Nix-managed: **Claude Code** (plugin 27310).
 - **Keymap is Nix-managed**: `pycharm/custom-keymap.xml` is symlinked into
   `~/Library/Application Support/JetBrains/PyCharm2026.1/keymaps/` via `home.file` in
   `home.nix`. Two consequences: (1) editing the keymap inside PyCharm fails silently (target is
