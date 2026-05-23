@@ -181,6 +181,20 @@ activate.
 - Updates via Nix activation (`homebrew.onActivation.upgrade = true` refreshes
   the cask). Don't use Bartender's in-app updater.
 
+### Ghostty
+- Terminal emulator, installed via Homebrew (`homebrew.casks` in `flake.nix`), not Nix.
+- Why Homebrew: `pkgs.ghostty` on Darwin has historically been fragile — Ghostty's macOS build
+  requires a Swift/Xcode toolchain that nixpkgs cannot cleanly reproduce, so the Darwin package
+  has lagged or broken across releases. The Homebrew cask ships the upstream signed `.app` into
+  `/Applications` as-is. (Revisit moving to Nix once `pkgs.ghostty` on `aarch64-darwin` is
+  reliable.)
+- Configuration lives at `~/Library/Application Support/com.mitchellh.ghostty/config` (or
+  `~/.config/ghostty/config`), **not Nix-managed**. If you ever want it declarative, the HM
+  `programs.ghostty` module exists on HM `master` — check availability on `release-25.11`
+  before relying on it.
+- Updates via Nix activation (`homebrew.onActivation.upgrade = true` refreshes the cask). Don't
+  use Ghostty's in-app updater.
+
 ### PyCharm Professional
 - Installed via `pkgs.jetbrains.pycharm` in `home.packages`, overlaid to the
   unstable build via `unstableOverlay` because the 25.11 stable channel never backports
@@ -231,7 +245,7 @@ activate.
 - **Used only** for packages that don't tolerate the Nix store layout — either GUI apps
   that path-check against `/Applications`, or binaries whose Apple code signature must
   be preserved (Nix's build/wrap step invalidates upstream signatures). Currently:
-  `1password`, `1password-cli`, `orbstack`, `raycast`, and `bartender`.
+  `1password`, `1password-cli`, `orbstack`, `raycast`, `bartender`, and `ghostty`.
   Everything else stays on Nix.
 - `enableRosetta = false`. Flip to `true` only if an x86_64-only cask needs to be
   installed alongside the native aarch64 brew (rare).

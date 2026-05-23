@@ -35,6 +35,7 @@ nix run nix-darwin/master#darwin-rebuild -- switch --flake ~/.config/nix-darwin
     - Disable in-app updater on first launch
     - Set keymap to `ALix keymap`
 - Orbstack
+- Ghostty
 
 ### Configuration/Tools
 

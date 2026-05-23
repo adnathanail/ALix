@@ -89,7 +89,7 @@
               # installed by hand is captured in this list.
               cleanup = "none";
             };
-            casks = [ "1password" "1password-cli" "orbstack" "raycast" "bartender" ];
+            casks = [ "1password" "1password-cli" "orbstack" "raycast" "bartender" "ghostty" ];
           };
         })
 
