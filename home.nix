@@ -32,6 +32,7 @@
     pkgs.rectangle
     pkgs.jetbrains.pycharm
     pkgs.prek
+    pkgs.python3
   ];
 
   # PyCharm keymap. Symlinked into the versioned config dir; bump the path

@@ -47,3 +47,4 @@ nix run nix-darwin/master#darwin-rebuild -- switch --flake ~/.config/nix-darwin
 
 - git
 - prek
+- python
