@@ -54,9 +54,6 @@
           # persistent-apps only covers what comes after it.
           system.defaults.dock.persistent-apps = [
             { app = "/Applications/Ghostty.app"; }
-            # /Applications/Safari.app is a symlink into the Cryptex sealed
-            # system volume, which makes the Dock draw an alias-arrow badge on
-            # the icon. Point at the real path to avoid that.
             { app = "/System/Cryptexes/App/System/Applications/Safari.app"; }
             { spacer = { small = true; }; }
             { app = "/Users/${username}/Applications/Home Manager Apps/PyCharm.app"; }
