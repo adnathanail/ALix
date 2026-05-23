@@ -22,13 +22,13 @@
       let
         unstable = import nixpkgs-unstable {
         inherit (prev) system;
-          config.allowUnfree = true;   # claude-code, pycharm-professional are unfree
+          config.allowUnfree = true;   # claude-code, pycharm are unfree
         };
       in {
         claude-code = unstable.claude-code;
         # Merge so other jetbrains.* attrs keep coming from stable.
         jetbrains = prev.jetbrains // {
-          pycharm-professional = unstable.jetbrains.pycharm-professional;
+          pycharm = unstable.jetbrains.pycharm;
         };
     };
   in {

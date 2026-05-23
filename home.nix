@@ -27,7 +27,10 @@
   # Rectangle — Magnet-style window snapping. Configure keybindings/snap
   # areas in Rectangle's own preferences UI; it persists them to
   # ~/Library/Preferences/com.knollsoft.Rectangle.plist (not Nix-managed).
-    pkgs.jetbrains.pycharm-professional
+
+  home.packages = [
+    pkgs.rectangle
+    pkgs.jetbrains.pycharm
   ];
 
   programs.vscode = {

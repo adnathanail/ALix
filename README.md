@@ -10,6 +10,8 @@ sudo darwin-rebuild switch --flake ~/.config/nix-darwin
 
 - Claude Code
 - VS Code
+- PyCharm
+    - Disable in-app updater on first launch
 
 ### Configuration/Tools
 

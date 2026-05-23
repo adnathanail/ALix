@@ -61,14 +61,14 @@ default also wants to manage all of that, which collides (`error: Unexpected fil
 Some packages move faster than the stable channel can backport (Claude Code ships ~weekly;
 JetBrains IDEs get minor-version bumps every few months that release-25.11 will never see). An
 overlay (`unstableOverlay`) pulls **specific** packages from `nixpkgs-unstable`, leaving everything
-else on stable 25.11. Currently overridden: `claude-code`, `jetbrains.pycharm-professional`. For
+else on stable 25.11. Currently overridden: `claude-code`, `jetbrains.pycharm`. For
 `jetbrains.*` the override merges (`prev.jetbrains // { … }`) so other JetBrains IDEs would still
 come from stable. Reuse this pattern for any other single package that needs to be fresher than
 the stable pin.
 
 ### `allowUnfree`
 `nixpkgs.config.allowUnfree = true` is required for proprietary packages (`claude-code`, `vscode`,
-`jetbrains.pycharm-professional`). Narrow it to an `allowUnfreePredicate` if stricter control is
+`jetbrains.pycharm`). Narrow it to an `allowUnfreePredicate` if stricter control is
 ever wanted.
 
 ### Home Manager as a nix-darwin module
@@ -101,7 +101,7 @@ activate.
 - Updates via Nix, not VS Code's own updater.
 
 ### PyCharm Professional
-- Installed via `pkgs.jetbrains.pycharm-professional` in `home.packages`, overlaid to the
+- Installed via `pkgs.jetbrains.pycharm` in `home.packages`, overlaid to the
   unstable build via `unstableOverlay` because the 25.11 stable channel never backports
   JetBrains minor-version bumps (e.g. 2025.3 → 2026.1). Unstable typically lags JetBrains
   releases by 1–4 weeks.
