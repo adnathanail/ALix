@@ -28,6 +28,7 @@
         };
       in {
         claude-code = unstable.claude-code;
+        prek = unstable.prek;
         # Merge so other jetbrains.* attrs keep coming from stable.
         jetbrains = prev.jetbrains // {
           pycharm = unstable.jetbrains.pycharm;

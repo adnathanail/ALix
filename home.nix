@@ -31,6 +31,7 @@
   home.packages = [
     pkgs.rectangle
     pkgs.jetbrains.pycharm
+    pkgs.prek
   ];
 
   # PyCharm keymap. Symlinked into the versioned config dir; bump the path

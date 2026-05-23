@@ -39,7 +39,11 @@ nix run nix-darwin/master#darwin-rebuild -- switch --flake ~/.config/nix-darwin
 
 ### Configuration/Tools
 
-- git
 - Touch ID for sudo
 - Window tiling (Rectangle)
 - Raycast
+
+### CLIs
+
+- git
+- prek

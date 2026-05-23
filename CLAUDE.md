@@ -61,7 +61,7 @@ default also wants to manage all of that, which collides (`error: Unexpected fil
 Some packages move faster than the stable channel can backport (Claude Code ships ~weekly;
 JetBrains IDEs get minor-version bumps every few months that release-25.11 will never see). An
 overlay (`unstableOverlay`) pulls **specific** packages from `nixpkgs-unstable`, leaving everything
-else on stable 25.11. Currently overridden: `claude-code`, `jetbrains.pycharm`. For
+else on stable 25.11. Currently overridden: `claude-code`, `prek`, `jetbrains.pycharm`. For
 `jetbrains.*` the override merges (`prev.jetbrains // { … }`) so other JetBrains IDEs would still
 come from stable. Reuse this pattern for any other single package that needs to be fresher than
 the stable pin.
@@ -231,6 +231,14 @@ activate.
 - Updates via Nix, not Rectangle's own updater.
 - Config lives at `~/.config/aerospace/aerospace.toml` and is Nix-owned (symlinked into the
   store). Edits to it won't persist — change `userSettings` in `home.nix` instead.
+
+### prek
+- Rust reimplementation of `pre-commit`, installed via `pkgs.prek` in `home.packages`. Overlaid
+  to the unstable build via `unstableOverlay` because it's a fast-moving 0.x tool and the stable
+  25.11 channel will lag releases (stable was 0.2.17, unstable 0.3.11 at install time).
+- Per-repo hook config (`.pre-commit-config.yaml`) is the same format as upstream `pre-commit`
+  and lives in each project repo — not Nix-managed.
+- Update via Nix (`nix flake update nixpkgs-unstable` + rebuild). No self-updater to disable.
 
 ### git
 - `programs.git` manages identity and `~/.gitconfig` declaratively. Installing git via Nix avoids
