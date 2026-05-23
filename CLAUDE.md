@@ -140,6 +140,26 @@ activate.
 - Updates via Nix activation (`homebrew.onActivation.upgrade = true` refreshes
   the cask). Don't use OrbStack's in-app updater.
 
+### Raycast
+- Spotlight replacement / launcher, installed via Homebrew (`homebrew.casks`
+  in `flake.nix`), not Nix.
+- Why Homebrew: Raycast registers a Login Items helper via Apple's Service
+  Management framework, captures a system-wide hotkey, and loads
+  community-published extensions that path-check the host bundle. All of this
+  is tied to the official code signature and the `/Applications/Raycast.app`
+  install path. Nix's wrap step invalidates the signature and HM would land
+  it in `~/Applications/Home Manager Apps/`, so the launch-at-login
+  registration and several extensions silently fail.
+- First launch: grant Accessibility *and* Input Monitoring in
+  System Settings → Privacy & Security, then run through Raycast's onboarding
+  to set the hotkey (default ⌥Space — collides with Spotlight, which Raycast's
+  onboarding offers to disable).
+- Account state, installed extensions, snippets, quicklinks, and Raycast Pro
+  cloud-sync credentials live under `~/Library/Application Support/com.raycast.macos/`
+  and `~/Library/Preferences/com.raycast.macos.plist`, **not Nix-managed**.
+- Updates via Nix activation (`homebrew.onActivation.upgrade = true` refreshes
+  the cask). Don't use Raycast's in-app updater.
+
 ### PyCharm Professional
 - Installed via `pkgs.jetbrains.pycharm` in `home.packages`, overlaid to the
   unstable build via `unstableOverlay` because the 25.11 stable channel never backports
@@ -182,7 +202,8 @@ activate.
 - **Used only** for packages that don't tolerate the Nix store layout — either GUI apps
   that path-check against `/Applications`, or binaries whose Apple code signature must
   be preserved (Nix's build/wrap step invalidates upstream signatures). Currently:
-  `1password`, `1password-cli`, and `orbstack`. Everything else stays on Nix.
+  `1password`, `1password-cli`, `orbstack`, and `raycast`. Everything else
+  stays on Nix.
 - `enableRosetta = false`. Flip to `true` only if an x86_64-only cask needs to be
   installed alongside the native aarch64 brew (rare).
 - `homebrew.onActivation.upgrade = true`, so casks update on every `darwin-rebuild`.
