@@ -4,7 +4,7 @@
 
 Rebuild `nix-darwin` config
 ```bash
-sudo darwin-rebuild switch --flake ~/.config/nix-darwin
+nix-switch
 ```
 
 ## First use

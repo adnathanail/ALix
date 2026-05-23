@@ -34,6 +34,9 @@
     pkgs.prek
     pkgs.python3
     pkgs.gh
+    (pkgs.writeShellScriptBin "nix-switch" ''
+      exec sudo darwin-rebuild switch --flake ~/.config/nix-darwin "$@"
+    '')
   ];
 
   # PyCharm keymap. Symlinked into the versioned config dir; bump the path
