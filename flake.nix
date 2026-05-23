@@ -65,6 +65,17 @@
             Bluetooth = true;
           };
 
+          # Clear the ⌘⇧A hotkey on the "Search man Page Index in Terminal"
+          # service — it otherwise hijacks ⌘⇧A system-wide and breaks PyCharm's
+          # Find Action. The service itself stays available in the Services menu.
+          system.defaults.CustomUserPreferences."pbs" = {
+            NSServicesStatus = {
+              "com.apple.Terminal - Search man Page Index in Terminal - searchManPages" = {
+                key_equivalent = "";
+              };
+            };
+          };
+
           # Lix installer owns Nix + /etc/nix/nix.conf.
           nix.enable = false;
 
