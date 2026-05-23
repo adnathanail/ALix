@@ -120,6 +120,26 @@ activate.
 - Updates: both casks refresh on every `darwin-rebuild` (because
   `homebrew.onActivation.upgrade = true`). Don't use 1Password's in-app updater.
 
+### OrbStack
+- Docker Desktop / lightweight Linux-VM app, installed via Homebrew
+  (`homebrew.casks` in `flake.nix`), not Nix.
+- Why Homebrew: OrbStack installs a privileged helper (`OrbStackHelper`) and
+  network components that depend on Apple's designated-requirement code
+  signature and on `/Applications/OrbStack.app` being its install path. Nix's
+  build/wrap step invalidates the signature, and Home Manager would land it in
+  `~/Applications/Home Manager Apps/` — the helper handshake fails in both
+  cases. (A `pkgs.orbstack` exists but isn't viable for the same reason
+  `pkgs._1password-gui` isn't.)
+- First launch: grant the requested permissions (System Settings → Privacy &
+  Security) and let it install its CLI shims (`docker`, `docker compose`,
+  `orb`, `orbctl`) into `/usr/local/bin`. These come from OrbStack itself —
+  do NOT also install `pkgs.docker` or `pkgs.docker-compose`, or you'll get
+  PATH conflicts.
+- VM state, container images, and settings live under `~/.orbstack/` and
+  `~/Library/Group Containers/HUAQ24HBR6.dev.orbstack/`, **not Nix-managed**.
+- Updates via Nix activation (`homebrew.onActivation.upgrade = true` refreshes
+  the cask). Don't use OrbStack's in-app updater.
+
 ### PyCharm Professional
 - Installed via `pkgs.jetbrains.pycharm` in `home.packages`, overlaid to the
   unstable build via `unstableOverlay` because the 25.11 stable channel never backports
@@ -162,7 +182,7 @@ activate.
 - **Used only** for packages that don't tolerate the Nix store layout — either GUI apps
   that path-check against `/Applications`, or binaries whose Apple code signature must
   be preserved (Nix's build/wrap step invalidates upstream signatures). Currently:
-  `1password` and `1password-cli`. Everything else stays on Nix.
+  `1password`, `1password-cli`, and `orbstack`. Everything else stays on Nix.
 - `enableRosetta = false`. Flip to `true` only if an x86_64-only cask needs to be
   installed alongside the native aarch64 brew (rare).
 - `homebrew.onActivation.upgrade = true`, so casks update on every `darwin-rebuild`.

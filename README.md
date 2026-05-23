@@ -1,5 +1,14 @@
 # ALix
 
+## Rebuilding
+
+Rebuild `nix-darwin` config
+```bash
+sudo darwin-rebuild switch --flake ~/.config/nix-darwin
+```
+
+## First use
+
 [Install Lix](https://lix.systems/install/#on-any-other-linuxmacos-system)
 ```bash
 curl -sSf -L https://install.lix.systems/lix | sh -s -- install
@@ -10,9 +19,9 @@ Install XCode dev tools
 xcode-select --install
 ```
 
-Setup the `nix-darwin` config
+Bootstrap `nix-darwin`
 ```bash
-sudo darwin-rebuild switch --flake ~/.config/nix-darwin
+nix run nix-darwin/master#darwin-rebuild -- switch --flake ~/.config/nix-darwin
 ```
 
 ## Features
@@ -24,6 +33,7 @@ sudo darwin-rebuild switch --flake ~/.config/nix-darwin
 - 1Password
 - PyCharm
     - Disable in-app updater on first launch
+- Orbstack
 
 ### Configuration/Tools
 
