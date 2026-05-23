@@ -33,6 +33,7 @@
       userSettings = {
         "nix.enableLanguageServer" = true;
         "nix.serverPath" = "${pkgs.nixd}/bin/nixd";
+        "git.enableSmartCommit" = true;
       };
     };
   };
