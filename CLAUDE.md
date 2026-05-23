@@ -160,6 +160,27 @@ activate.
 - Updates via Nix activation (`homebrew.onActivation.upgrade = true` refreshes
   the cask). Don't use Raycast's in-app updater.
 
+### Bartender
+- Menu-bar organizer (hides/groups menu-bar items), installed via Homebrew
+  (`homebrew.casks` in `flake.nix`), not Nix (not in nixpkgs anyway — it's
+  a commercial, closed-source app).
+- Why Homebrew: Bartender uses Screen Recording + Accessibility to read and
+  redraw the menu bar, and its entitlements are tied to Apple's
+  designated-requirement code signature. Nix's wrap step would invalidate the
+  signature, and the macOS TCC database keys permissions to a bundle path +
+  signature pair — so even after re-granting, the helper would not be able to
+  read the menu bar reliably. Homebrew ships the upstream signed `.app`
+  into `/Applications` as-is.
+- First launch: grant **Screen Recording** *and* **Accessibility** in System
+  Settings → Privacy & Security. Without Screen Recording, hidden icons
+  render as blanks; without Accessibility, clicks pass through to the wrong
+  menu items. Macs may require a logout after granting Screen Recording.
+- Licence/account state lives inside the app and under
+  `~/Library/Application Support/com.surteesstudios.Bartender/` and
+  `~/Library/Preferences/com.surteesstudios.Bartender.plist`, **not Nix-managed**.
+- Updates via Nix activation (`homebrew.onActivation.upgrade = true` refreshes
+  the cask). Don't use Bartender's in-app updater.
+
 ### PyCharm Professional
 - Installed via `pkgs.jetbrains.pycharm` in `home.packages`, overlaid to the
   unstable build via `unstableOverlay` because the 25.11 stable channel never backports
@@ -210,8 +231,8 @@ activate.
 - **Used only** for packages that don't tolerate the Nix store layout — either GUI apps
   that path-check against `/Applications`, or binaries whose Apple code signature must
   be preserved (Nix's build/wrap step invalidates upstream signatures). Currently:
-  `1password`, `1password-cli`, `orbstack`, and `raycast`. Everything else
-  stays on Nix.
+  `1password`, `1password-cli`, `orbstack`, `raycast`, and `bartender`.
+  Everything else stays on Nix.
 - `enableRosetta = false`. Flip to `true` only if an x86_64-only cask needs to be
   installed alongside the native aarch64 brew (rare).
 - `homebrew.onActivation.upgrade = true`, so casks update on every `darwin-rebuild`.

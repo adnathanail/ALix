@@ -49,6 +49,21 @@
           # Hide "Recent applications" section in the Dock.
           system.defaults.dock.show-recents = false;
 
+          # Menu-bar clock: 24h time with seconds, no date.
+          system.defaults.menuExtraClock = {
+            Show24Hour = true;
+            ShowSeconds = true;
+            ShowDate = 2;            # 0 = when space allows, 1 = always, 2 = never
+            ShowDayOfWeek = false;
+            ShowDayOfMonth = false;
+          };
+
+          # Control Center / menu-bar items.
+          system.defaults.controlcenter = {
+            BatteryShowPercentage = true;
+            Bluetooth = true;
+          };
+
           # Lix installer owns Nix + /etc/nix/nix.conf.
           nix.enable = false;
 
@@ -74,7 +89,7 @@
               # installed by hand is captured in this list.
               cleanup = "none";
             };
-            casks = [ "1password" "1password-cli" "orbstack" "raycast" ];
+            casks = [ "1password" "1password-cli" "orbstack" "raycast" "bartender" ];
           };
         })
 
