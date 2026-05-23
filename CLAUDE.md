@@ -100,6 +100,26 @@ activate.
   subsequent rebuilds are fine.
 - Updates via Nix, not VS Code's own updater.
 
+### 1Password
+- **Both** the desktop app and the `op` CLI come from Homebrew
+  (`homebrew.casks = [ "1password" "1password-cli" ]` in `flake.nix`), not Nix.
+- Desktop app: `pkgs._1password-gui` is unusable on macOS — 1Password's runtime
+  self-check refuses to run anywhere except `/Applications/1Password.app`, and
+  Home Manager apps land in `~/Applications/Home Manager Apps/`. Homebrew installs
+  into `/Applications`, which keeps 1Password happy.
+- CLI: `pkgs._1password-cli` *runs* fine standalone, but the desktop ↔ CLI biometric
+  unlock handshake verifies AgileBits' designated code-signature requirement on the
+  `op` binary. Nix's build/wrap step invalidates that signature, so
+  *Settings → Developer → Integrate with 1Password CLI* will silently fail to unlock
+  via the desktop app. The Homebrew cask ships the upstream signed binary as-is.
+- All account state — sign-in, sync, browser extension pairing, SSH agent, biometric
+  unlock — is configured inside the 1Password app and persisted under
+  `~/Library/Group Containers/` and `~/Library/Containers/`, **not Nix-managed**.
+- Enable *Settings → Developer → Integrate with 1Password CLI* in the app once after
+  install — that's what wires `op` to Touch ID / desktop unlock.
+- Updates: both casks refresh on every `darwin-rebuild` (because
+  `homebrew.onActivation.upgrade = true`). Don't use 1Password's in-app updater.
+
 ### PyCharm Professional
 - Installed via `pkgs.jetbrains.pycharm` in `home.packages`, overlaid to the
   unstable build via `unstableOverlay` because the 25.11 stable channel never backports
@@ -134,6 +154,27 @@ activate.
   Apple's Command Line Tools prompt. (CLT is still needed only for build systems that hardcode
   `/usr/bin/git` or require Apple SDK headers.)
 
+### Homebrew (via nix-homebrew)
+- `nix-homebrew` installs and pins Homebrew itself (no manual `curl | bash`). The
+  `homebrew.*` options in `flake.nix` then declare what gets installed via it. Apple
+  Silicon Homebrew lives at `/opt/homebrew`; the module owns it on first activation
+  (you'll get a `sudo` prompt to take ownership).
+- **Used only** for packages that don't tolerate the Nix store layout — either GUI apps
+  that path-check against `/Applications`, or binaries whose Apple code signature must
+  be preserved (Nix's build/wrap step invalidates upstream signatures). Currently:
+  `1password` and `1password-cli`. Everything else stays on Nix.
+- `enableRosetta = false`. Flip to `true` only if an x86_64-only cask needs to be
+  installed alongside the native aarch64 brew (rare).
+- `homebrew.onActivation.upgrade = true`, so casks update on every `darwin-rebuild`.
+  `homebrew.onActivation.autoUpdate = false` keeps activation deterministic — Homebrew
+  itself isn't refreshed implicitly; `nix flake update nix-homebrew` is the bump knob.
+- `homebrew.onActivation.cleanup = "none"` for now. Flipping to `"zap"` would uninstall
+  any cask/brew not declared in `flake.nix`. Audit `brew list` against the config before
+  changing this — otherwise a rebuild silently nukes hand-installed casks.
+- `mutableTaps` is not pinned, so taps stay in their normal Homebrew-managed location
+  and `brew tap …` still works ad hoc. Cask/brew declarations stay declarative via
+  `homebrew.casks` / `homebrew.brews`.
+
 ## General rules for Nix-installed tools
 - **Never** rely on a tool's self-updater — the store is read-only. Update with
   `nix flake update` + rebuild.
@@ -144,9 +185,3 @@ activate.
 Enabled via `security.pam.services.sudo_local.touchIdAuth = true` — writes `/etc/pam.d/sudo_local`,
 which survives macOS updates. Touch ID does **not** work inside tmux without the `pam_reattach`
 module; add it there if/when tmux is in use.
-
-## TODO / not yet done
-- **Homebrew:** wire up `nix-homebrew` (installs and pins Homebrew itself — no manual curl needed)
-  plus the `homebrew.casks` / `homebrew.brews` / `homebrew.masApps` options for GUI apps. Note
-  `onActivation.cleanup = "zap"` uninstalls anything not declared, so enable it only once lists are
-  complete.

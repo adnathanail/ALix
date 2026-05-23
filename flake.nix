@@ -10,9 +10,11 @@
 
     home-manager.url = "github:nix-community/home-manager/release-25.11";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
+
+    nix-homebrew.url = "github:zhaofengli/nix-homebrew";
   };
 
-  outputs = inputs@{ self, nix-darwin, nixpkgs, nixpkgs-unstable, home-manager }:
+  outputs = inputs@{ self, nix-darwin, nixpkgs, nixpkgs-unstable, home-manager, nix-homebrew }:
   let
     username = "adnathanail";        # `whoami`
     hostname = "Alexs-MacBook-Pro";  # `scutil --get LocalHostName`
@@ -21,7 +23,7 @@
     unstableOverlay = final: prev:
       let
         unstable = import nixpkgs-unstable {
-        inherit (prev) system;
+          inherit (prev) system;
           config.allowUnfree = true;   # claude-code, pycharm are unfree
         };
       in {
@@ -30,7 +32,7 @@
         jetbrains = prev.jetbrains // {
           pycharm = unstable.jetbrains.pycharm;
         };
-    };
+      };
   in {
     darwinConfigurations.${hostname} = nix-darwin.lib.darwinSystem {
       modules = [
@@ -53,9 +55,40 @@
           security.pam.services.sudo_local.touchIdAuth = true;
 
           environment.systemPackages = [ ];
+
+          # Homebrew — used only for GUI casks that don't tolerate the
+          # Nix store layout (e.g. 1Password's anti-tamper check refuses
+          # to run anywhere except /Applications/<app>.app). nix-homebrew
+          # installs Homebrew itself; the `homebrew.*` options below
+          # declare what gets installed via it.
+          homebrew = {
+            enable = true;
+            onActivation = {
+              autoUpdate = false;
+              upgrade = true;
+              # `cleanup = "zap"` would uninstall anything not declared
+              # here. Leave at "none" until everything previously
+              # installed by hand is captured in this list.
+              cleanup = "none";
+            };
+            casks = [ "1password" "1password-cli" ];
+          };
         })
 
-        # ── Home Manager + Claude Code ──────────────────────────
+        # ── Homebrew (nix-homebrew) ─────────────────────────────
+        nix-homebrew.darwinModules.nix-homebrew
+        {
+          nix-homebrew = {
+            enable = true;
+            user = username;
+            # Apple Silicon installs to /opt/homebrew. Set
+            # `enableRosetta = true` only if an x86_64-only cask
+            # needs to be installed alongside the aarch64 brew.
+            enableRosetta = false;
+          };
+        }
+
+        # ── Home Manager ──────────────────────────
         home-manager.darwinModules.home-manager
         {
           home-manager.useGlobalPkgs = true;     # use the overlaid pkgs above
