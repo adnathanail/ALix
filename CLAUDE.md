@@ -172,6 +172,14 @@ activate.
   attempt to apply an update will fail. Update via Nix instead.
 - Project SDKs, plugins, and per-project run configs are not Nix-managed — they live under
   `~/Library/Application Support/JetBrains/PyCharm<version>/` and the project's `.idea/`.
+- **Keymap is Nix-managed**: `pycharm/custom-keymap.xml` is symlinked into
+  `~/Library/Application Support/JetBrains/PyCharm2026.1/keymaps/` via `home.file` in
+  `home.nix`. Two consequences: (1) editing the keymap inside PyCharm fails silently (target is
+  read-only in the Nix store) — edit the XML in the repo and rebuild instead; (2) the destination
+  path is **version-pinned**, so after a JetBrains minor-version bump (e.g. `PyCharm2026.1` →
+  `PyCharm2026.2`) the symlink will silently land in the old, unused dir until you update the
+  path in `home.nix`. Select the keymap once in *Settings → Keymap* after first activation —
+  it appears under its `name=` attribute ("Default for macOS copy").
 - Activation/licence sign-in happens inside the app and is persisted under
   `~/Library/Application Support/JetBrains/`, not Nix-managed.
 

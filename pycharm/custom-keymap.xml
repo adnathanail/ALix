@@ -1,0 +1,113 @@
+<keymap version="1" name="Default for macOS copy" parent="Mac OS X 10.5+">
+  <action id="ActivateCommitToolWindow" />
+  <action id="ActivateDebugToolWindow" />
+  <action id="ActivateFavoritesToolWindow" />
+  <action id="ActivateFindToolWindow" />
+  <action id="ActivateProblemsViewToolWindow" />
+  <action id="ActivateProjectToolWindow" />
+  <action id="ActivateRunToolWindow" />
+  <action id="ActivateServicesToolWindow" />
+  <action id="ActivateStructureToolWindow" />
+  <action id="ActivateTODOToolWindow" />
+  <action id="ActivateTerminalToolWindow" />
+  <action id="ActivateVersionControlToolWindow" />
+  <action id="CollapseAllRegions">
+    <keyboard-shortcut first-keystroke="shift meta subtract" />
+  </action>
+  <action id="CollapseRegion">
+    <keyboard-shortcut first-keystroke="meta minus" />
+  </action>
+  <action id="Diff.FocusOppositePane" />
+  <action id="DuplicatesForm.SendToLeft" />
+  <action id="DuplicatesForm.SendToRight" />
+  <action id="EditorDecreaseFontSize">
+    <keyboard-shortcut first-keystroke="shift meta minus" />
+  </action>
+  <action id="EditorIncreaseFontSize">
+    <keyboard-shortcut first-keystroke="shift meta equals" />
+  </action>
+  <action id="EditorTextEnd">
+    <keyboard-shortcut first-keystroke="meta end" />
+    <keyboard-shortcut first-keystroke="meta down" />
+  </action>
+  <action id="EditorTextEndWithSelection">
+    <keyboard-shortcut first-keystroke="shift meta end" />
+    <keyboard-shortcut first-keystroke="shift meta down" />
+  </action>
+  <action id="EditorTextStart">
+    <keyboard-shortcut first-keystroke="meta home" />
+    <keyboard-shortcut first-keystroke="meta up" />
+  </action>
+  <action id="EditorTextStartWithSelection">
+    <keyboard-shortcut first-keystroke="shift meta home" />
+    <keyboard-shortcut first-keystroke="shift meta up" />
+  </action>
+  <action id="ExpandAllRegions">
+    <keyboard-shortcut first-keystroke="shift meta add" />
+  </action>
+  <action id="ExpandRegion">
+    <keyboard-shortcut first-keystroke="meta equals" />
+  </action>
+  <action id="FileChooser.GotoHome" />
+  <action id="FileChooser.GotoProject" />
+  <action id="Go To Tab #3">
+    <keyboard-shortcut first-keystroke="meta 3" />
+  </action>
+  <action id="Go To Tab #4">
+    <keyboard-shortcut first-keystroke="meta 4" />
+  </action>
+  <action id="Go To Tab #5">
+    <keyboard-shortcut first-keystroke="meta 5" />
+  </action>
+  <action id="Go To Tab #7">
+    <keyboard-shortcut first-keystroke="meta 7" />
+  </action>
+  <action id="Go To Tab #8">
+    <keyboard-shortcut first-keystroke="meta 8" />
+  </action>
+  <action id="GoToLastTab">
+    <keyboard-shortcut first-keystroke="meta 0" />
+  </action>
+  <action id="GoToTab1">
+    <keyboard-shortcut first-keystroke="meta 1" />
+  </action>
+  <action id="GoToTab2">
+    <keyboard-shortcut first-keystroke="meta 2" />
+  </action>
+  <action id="GoToTab3">
+    <keyboard-shortcut first-keystroke="meta 3" />
+  </action>
+  <action id="GoToTab4">
+    <keyboard-shortcut first-keystroke="meta 4" />
+  </action>
+  <action id="GoToTab5">
+    <keyboard-shortcut first-keystroke="meta 5" />
+  </action>
+  <action id="GoToTab6">
+    <keyboard-shortcut first-keystroke="meta 6" />
+  </action>
+  <action id="GoToTab7">
+    <keyboard-shortcut first-keystroke="meta 7" />
+  </action>
+  <action id="GoToTab8">
+    <keyboard-shortcut first-keystroke="meta 8" />
+  </action>
+  <action id="GoToTab9">
+    <keyboard-shortcut first-keystroke="meta 9" />
+  </action>
+  <action id="GotoTest" />
+  <action id="NextEditorTab" />
+  <action id="NextTab">
+    <keyboard-shortcut first-keystroke="ctrl tab" />
+  </action>
+  <action id="PreviousEditorTab" />
+  <action id="PreviousTab">
+    <keyboard-shortcut first-keystroke="shift ctrl tab" />
+  </action>
+  <action id="ReopenClosedTab">
+    <keyboard-shortcut first-keystroke="shift meta t" />
+  </action>
+  <action id="ServiceView.ShowServices" />
+  <action id="Switcher" />
+  <action id="com.firsttimeinforever.intellij.pdf.viewer.actions.common.IncreaseDocumentScaleAction" />
+</keymap>
