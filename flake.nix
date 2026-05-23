@@ -46,6 +46,9 @@
           system.stateVersion = 6;
           system.primaryUser = username;
 
+          # Hide "Recent applications" section in the Dock.
+          system.defaults.dock.show-recents = false;
+
           # Lix installer owns Nix + /etc/nix/nix.conf.
           nix.enable = false;
 
