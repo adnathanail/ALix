@@ -50,6 +50,18 @@
           # Hide "Recent applications" section in the Dock.
           system.defaults.dock.show-recents = false;
 
+          # Dock contents: Finder is always pinned leftmost by macOS, so
+          # persistent-apps only covers what comes after it.
+          system.defaults.dock.persistent-apps = [
+            { app = "/Applications/Ghostty.app"; }
+            { spacer = { small = true; }; }
+            # /Applications/Safari.app is a symlink into the Cryptex sealed
+            # system volume, which makes the Dock draw an alias-arrow badge on
+            # the icon. Point at the real path to avoid that.
+            { app = "/System/Cryptexes/App/System/Applications/Safari.app"; }
+            { spacer = { small = false; }; }
+          ];
+
           # Menu-bar clock: 24h time with seconds, no date.
           system.defaults.menuExtraClock = {
             Show24Hour = true;
