@@ -24,6 +24,11 @@
     };
   };
 
+  # Rectangle — Magnet-style window snapping. Configure keybindings/snap
+  # areas in Rectangle's own preferences UI; it persists them to
+  # ~/Library/Preferences/com.knollsoft.Rectangle.plist (not Nix-managed).
+  home.packages = [ pkgs.rectangle ];
+
   programs.vscode = {
     enable = true;
     profiles.default = {

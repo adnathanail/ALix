@@ -96,6 +96,20 @@ activate.
   subsequent rebuilds are fine.
 - Updates via Nix, not VS Code's own updater.
 
+### Rectangle
+- Magnet-style window-snapping app, installed via `pkgs.rectangle` in `home.packages`. The
+  nixpkgs package fetches the official .dmg and unpacks `Rectangle.app` into the store; HM
+  surfaces it at `~/Applications/Home Manager Apps/Rectangle.app`, where Spotlight finds it.
+- Configuration (keybindings, snap areas, "launch on login") lives in Rectangle's own
+  preferences UI and is persisted to `~/Library/Preferences/com.knollsoft.Rectangle.plist`,
+  which is *not* Nix-managed. If you ever want it declarative, set the matching
+  `defaults`-style keys via `system.defaults.CustomUserPreferences."com.knollsoft.Rectangle"`.
+- Needs Accessibility permission (System Settings → Privacy & Security → Accessibility) on
+  first launch, or it can't move windows.
+- Updates via Nix, not Rectangle's own updater.
+- Config lives at `~/.config/aerospace/aerospace.toml` and is Nix-owned (symlinked into the
+  store). Edits to it won't persist — change `userSettings` in `home.nix` instead.
+
 ### git
 - `programs.git` manages identity and `~/.gitconfig` declaratively. Installing git via Nix avoids
   Apple's Command Line Tools prompt. (CLT is still needed only for build systems that hardcode
