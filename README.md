@@ -33,10 +33,14 @@ nix run nix-darwin/master#darwin-rebuild -- switch --flake ~/.config/nix-darwin
     - Plugins:
         - Nix IDE
         - Dev Containers
+        - Claude Code
 - 1Password
 - PyCharm
-    - Disable in-app updater on first launch
-    - Set keymap to `ALix keymap`
+    - Plugins:
+        - Claude Code
+    - *First use*:
+        - Disable in-app updater
+        - Set keymap to `ALix keymap`
 - Orbstack
 - Ghostty
 

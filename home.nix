@@ -28,9 +28,23 @@
   # areas in Rectangle's own preferences UI; it persists them to
   # ~/Library/Preferences/com.knollsoft.Rectangle.plist (not Nix-managed).
 
-  home.packages = [
+  home.packages = let
+    # JetBrains plugins are wrapped into the IDE bundle via
+    # jetbrains.plugins.addPlugins, which takes a derivation (not a string ID
+    # — that API was removed). fetchzip the marketplace .zip directly; bump
+    # `url` + `hash` to update. Compatibility starts at build 242.0, so any
+    # 2024.2+ IDE works. Find new updates via
+    # https://plugins.jetbrains.com/api/plugins/27310/updates
+    claude-code-jb = pkgs.fetchzip {
+      url = "https://plugins.jetbrains.com/files/27310/907737/claude-code-jetbrains-plugin-0.1.14-beta.zip";
+      hash = "sha256-q86soDjURsZ2sNKVUWLiuLA6B2p/HdWVA+J55lV7vrg=";
+    };
+    pycharmWithPlugins = pkgs.jetbrains.plugins.addPlugins pkgs.jetbrains.pycharm [
+      claude-code-jb
+    ];
+  in [
     pkgs.rectangle
-    pkgs.jetbrains.pycharm
+    pycharmWithPlugins
     pkgs.prek
     pkgs.python3
     pkgs.gh
@@ -59,6 +73,7 @@
       extensions = with pkgs.vscode-extensions; [
         jnoortheen.nix-ide
         ms-vscode-remote.remote-containers
+        anthropic.claude-code
       ];
       userSettings = {
         "nix.enableLanguageServer" = true;
