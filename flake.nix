@@ -17,12 +17,19 @@
     username = "adnathanail";        # `whoami`
     hostname = "Alexs-MacBook-Pro";  # `scutil --get LocalHostName`
 
-    # Pull claude-code (and ONLY claude-code) from unstable.
-    unstableOverlay = final: prev: {
-      claude-code = (import nixpkgs-unstable {
+    # Pull specific packages from unstable while keeping everything else on stable.
+    unstableOverlay = final: prev:
+      let
+        unstable = import nixpkgs-unstable {
         inherit (prev) system;
-        config.allowUnfree = true;   # claude-code is proprietary -> unfree
-      }).claude-code;
+          config.allowUnfree = true;   # claude-code, pycharm-professional are unfree
+        };
+      in {
+        claude-code = unstable.claude-code;
+        # Merge so other jetbrains.* attrs keep coming from stable.
+        jetbrains = prev.jetbrains // {
+          pycharm-professional = unstable.jetbrains.pycharm-professional;
+        };
     };
   in {
     darwinConfigurations.${hostname} = nix-darwin.lib.darwinSystem {

@@ -57,15 +57,19 @@ default also wants to manage all of that, which collides (`error: Unexpected fil
 - HM release branches get bug fixes but rarely *new modules*, so a brand-new HM module may only
   exist on `master`. Check availability before relying on one.
 
-### Selective unstable overlay for Claude Code
-Claude Code ships releases very frequently and the stable channel lags badly. An overlay
-(`unstableOverlay`) pulls **only** `claude-code` from `nixpkgs-unstable`, leaving everything else on
-stable 25.11. Reuse this same pattern for any other single package that needs to be fresher than the
-stable pin.
+### Selective unstable overlay
+Some packages move faster than the stable channel can backport (Claude Code ships ~weekly;
+JetBrains IDEs get minor-version bumps every few months that release-25.11 will never see). An
+overlay (`unstableOverlay`) pulls **specific** packages from `nixpkgs-unstable`, leaving everything
+else on stable 25.11. Currently overridden: `claude-code`, `jetbrains.pycharm-professional`. For
+`jetbrains.*` the override merges (`prev.jetbrains // { … }`) so other JetBrains IDEs would still
+come from stable. Reuse this pattern for any other single package that needs to be fresher than
+the stable pin.
 
 ### `allowUnfree`
-`nixpkgs.config.allowUnfree = true` is required for proprietary packages (`claude-code`, `vscode`).
-Narrow it to an `allowUnfreePredicate` if stricter control is ever wanted.
+`nixpkgs.config.allowUnfree = true` is required for proprietary packages (`claude-code`, `vscode`,
+`jetbrains.pycharm-professional`). Narrow it to an `allowUnfreePredicate` if stricter control is
+ever wanted.
 
 ### Home Manager as a nix-darwin module
 HM runs as a darwin module with `useGlobalPkgs = true` (so HM uses the system `pkgs` **with overlays
@@ -95,6 +99,21 @@ activate.
 - First eval after adding it is slow/heavy because the Marketplace overlay set is enormous;
   subsequent rebuilds are fine.
 - Updates via Nix, not VS Code's own updater.
+
+### PyCharm Professional
+- Installed via `pkgs.jetbrains.pycharm-professional` in `home.packages`, overlaid to the
+  unstable build via `unstableOverlay` because the 25.11 stable channel never backports
+  JetBrains minor-version bumps (e.g. 2025.3 → 2026.1). Unstable typically lags JetBrains
+  releases by 1–4 weeks.
+- Lands at `~/Applications/Home Manager Apps/PyCharm Professional Edition.app`; Spotlight
+  finds it.
+- **Disable the in-app updater** on first launch: Settings → Appearance & Behavior → System
+  Settings → Updates → uncheck "Check IDE updates for…". The store is read-only, so any
+  attempt to apply an update will fail. Update via Nix instead.
+- Project SDKs, plugins, and per-project run configs are not Nix-managed — they live under
+  `~/Library/Application Support/JetBrains/PyCharm<version>/` and the project's `.idea/`.
+- Activation/licence sign-in happens inside the app and is persisted under
+  `~/Library/Application Support/JetBrains/`, not Nix-managed.
 
 ### Rectangle
 - Magnet-style window-snapping app, installed via `pkgs.rectangle` in `home.packages`. The
