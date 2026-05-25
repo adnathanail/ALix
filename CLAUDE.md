@@ -243,6 +243,54 @@ activate.
   live at `~/Library/Preferences/com.microsoft.autoupdate2.plist` and the standard
   `defaults write` mechanism nix-darwin uses works as expected.)
 
+### Slack
+- Team chat client, installed via Homebrew (`homebrew.casks` in `flake.nix`), not Nix.
+- Why Homebrew: `pkgs.slack` exists but is an Electron app whose entitlements
+  (notifications, microphone/camera for huddles, screen recording for screen
+  sharing, keychain for workspace sign-in, the autoupdater helper) are tied to
+  Slack's designated-requirement code signature and to the
+  `/Applications/Slack.app` install path. Nix's wrap step invalidates the
+  signature and HM would land it in `~/Applications/Home Manager Apps/`, which
+  breaks workspace sign-in (the TCC database rejects the re-signed bundle when
+  it tries to use Keychain) and silently disables screen-share. Homebrew ships
+  the upstream signed `.app` into `/Applications` as-is.
+- First launch: sign in to workspaces and grant the requested permissions in
+  System Settings → Privacy & Security (Notifications, Microphone, Camera,
+  Screen Recording — the last one is required for screen sharing in huddles).
+  A logout/login is sometimes needed after granting Screen Recording.
+- Workspace state, message caches, sign-in tokens, and per-workspace settings
+  live under `~/Library/Application Support/Slack/` and
+  `~/Library/Containers/com.tinyspeck.slackmacgap/`, **not Nix-managed**. Slack
+  is a Mac App Store-style sandboxed bundle when installed from the cask
+  (`com.tinyspeck.slackmacgap` is the App Store ID; the cask installs the
+  direct-download non-MAS build with the same container path).
+- Updates via Nix activation (`homebrew.onActivation.upgrade = true` refreshes
+  the cask). Slack's in-app updater is harmless (it can write to
+  `/Applications` since the cask doesn't lock it down), but disabling it keeps
+  the version in lockstep with what's pinned through Nix — toggle off in
+  *Preferences → Advanced → "Automatically update Slack"*.
+
+### Todoist
+- Task manager client, installed via Homebrew (`homebrew.casks` in `flake.nix`),
+  not Nix (not in nixpkgs).
+- Why Homebrew: Todoist registers a Login Items helper via Apple's Service
+  Management framework for "launch at login", captures a global quick-add
+  hotkey, and uses keychain for Doist account sign-in. All three are bound to
+  the designated-requirement code signature and the `/Applications/Todoist.app`
+  install path. Homebrew ships the upstream signed `.app` into `/Applications`
+  as-is.
+- First launch: sign in to the Doist account and grant Notifications in
+  System Settings → Privacy & Security. Accept the "Launch at login" prompt
+  if you want the menu-bar item to start automatically. Set the global hotkey
+  in *Settings → General → Keyboard shortcuts* if needed (collides with
+  nothing by default — Todoist ships with no hotkey set).
+- Account state, task caches, offline queue, and the menu-bar item's settings
+  live under `~/Library/Containers/com.todoist.mac.Todoist/` and
+  `~/Library/Application Support/com.todoist.mac.Todoist/`, **not Nix-managed**.
+  Tasks themselves live in Doist's cloud — the local store is just a cache.
+- Updates via Nix activation (`homebrew.onActivation.upgrade = true` refreshes
+  the cask). Don't use Todoist's in-app updater.
+
 ### PyCharm Professional
 - Installed via `pkgs.jetbrains.pycharm` in `home.packages`, overlaid to the
   unstable build via `unstableOverlay` because the 25.11 stable channel never backports

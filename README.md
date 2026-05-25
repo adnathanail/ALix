@@ -42,6 +42,8 @@ nix run nix-darwin/master#darwin-rebuild -- switch --flake ~/.config/nix-darwin
 - Orbstack
 - Ghostty
 - Outlook
+- Todoist
+- Slack
 
 ### Configuration/Tools
 
