@@ -66,6 +66,7 @@
         "nix.serverPath" = "${pkgs.nixd}/bin/nixd";
         "git.enableSmartCommit" = true;
         "git.autofetch" = true;
+        "git.confirmSync" = false;
       };
     };
   };
