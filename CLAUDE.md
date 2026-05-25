@@ -208,6 +208,41 @@ activate.
 - Updates via Nix activation (`homebrew.onActivation.upgrade = true` refreshes the cask). Don't
   use Ghostty's in-app updater.
 
+### Microsoft Outlook
+- Microsoft 365 mail/calendar/contacts client, installed via Homebrew (`homebrew.casks` in
+  `flake.nix`), not Nix.
+- Why Homebrew: not in nixpkgs (Microsoft 365 desktop apps generally aren't), and even if it
+  were, Outlook ships as a sandboxed Mac App Store-style bundle whose entitlements
+  (notifications, contacts, calendar, keychain for Microsoft 365 sign-in, AutoUpdate helper)
+  are tied to Apple's designated-requirement code signature and to the
+  `/Applications/Microsoft Outlook.app` install path. Nix's wrap step invalidates the
+  signature and HM would land it in `~/Applications/Home Manager Apps/`, breaking sign-in
+  and notifications. Homebrew ships the upstream signed `.app` into `/Applications` as-is.
+- First launch: sign in to the Microsoft 365 account and grant the requested permissions
+  in System Settings → Privacy & Security (Notifications, Contacts, Calendar). Outlook will
+  also prompt to enable its menu-bar/notification badge — accept once.
+- Account state, mail caches, signatures, rules, and sign-in tokens live under
+  `~/Library/Containers/com.microsoft.Outlook/` and
+  `~/Library/Group Containers/UBF8T346G9.Office/`, **not Nix-managed**.
+- App-level prefs **are** Nix-managed via `system.defaults.CustomUserPreferences` on the
+  `com.microsoft.Outlook` and `com.microsoft.office` domains in `flake.nix`. Outlook is
+  sandboxed, but Microsoft documents `defaults write com.microsoft.Outlook …` as the
+  supported preference mechanism — CFPreferences redirects writes through to the
+  container plist. Currently set: `AutomaticallyDownloadExternalContent = false` (block
+  remote tracking pixels), `FocusedInbox = false` (single chronological inbox), and
+  Office-wide `DiagnosticDataTypePreference = "BasicTelemetry"` (lowest telemetry level
+  available on consumer accounts; `ZeroTelemetry` is enterprise-only). Add new keys here,
+  not in-app — most Outlook prefs the UI exposes have a documented plist key on Microsoft
+  Learn under *Set preferences for Outlook for Mac*.
+- Microsoft AutoUpdate (MAU) is installed alongside Outlook by the cask. MAU is
+  **disabled declaratively** via
+  `system.defaults.CustomUserPreferences."com.microsoft.autoupdate2".HowToCheck = "Manual"`
+  in `flake.nix`, so updates flow through `darwin-rebuild` via the Homebrew cask refresh
+  (`homebrew.onActivation.upgrade = true`), not MAU's auto-installer. The pref applies to
+  any other Office app installed later, too. (MAU is a non-sandboxed helper, so its prefs
+  live at `~/Library/Preferences/com.microsoft.autoupdate2.plist` and the standard
+  `defaults write` mechanism nix-darwin uses works as expected.)
+
 ### PyCharm Professional
 - Installed via `pkgs.jetbrains.pycharm` in `home.packages`, overlaid to the
   unstable build via `unstableOverlay` because the 25.11 stable channel never backports

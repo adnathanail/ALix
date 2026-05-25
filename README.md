@@ -36,13 +36,12 @@ nix run nix-darwin/master#darwin-rebuild -- switch --flake ~/.config/nix-darwin
         - Claude Code
 - 1Password
 - PyCharm
-    - Plugins:
-        - Claude Code
     - *First use*:
         - Disable in-app updater
         - Set keymap to `ALix keymap`
 - Orbstack
 - Ghostty
+- Outlook
 
 ### Configuration/Tools
 
