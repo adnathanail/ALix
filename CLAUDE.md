@@ -7,7 +7,7 @@ Context for working on this nix-darwin configuration. Read this before making ch
 Declarative macOS system configuration for a single MacBook, managed with a Nix flake
 (**nix-darwin** + **Home Manager**). The config lives at `~/.config/nix-darwin/`:
 
-- `flake.nix` — flake inputs, the darwin system module, and the HM wiring.
+- `flake.nix` — flake inputs, the darwin system module, the HM wiring, and the Homebrew block.
 - `home.nix` — the Home Manager user config, imported by the flake.
 
 Machine facts:
@@ -23,367 +23,224 @@ Machine facts:
 sudo darwin-rebuild switch --flake ~/.config/nix-darwin
 ```
 
-- Activation **must run as root** (`sudo`) — nix-darwin requires it.
-- Update **one** input then rebuild: `nix flake update <input>` (e.g. `nixpkgs-unstable`).
-- Update **everything**: `nix flake update`.
+**Rule: DO NOT REBUILD — ASK THE USER TO DO SO.**
 
-**Rule: DO NOT REBUILD - ASK THE USER TO DO SO**
+Activation must run as root. See *Routine maintenance* below for `nix flake update` patterns.
 
-## Key decisions and rationale
+## Key architectural decisions
 
 ### Lix instead of upstream Nix
-Bootstrapped with the Lix installer, so Lix is the interpreter. nix-darwin recommends the Lix
-installer on macOS for its clean uninstaller and ability to survive macOS upgrades. Expect harmless
-`using 'or' as an identifier is deprecated` warnings from Lix while it evaluates nixpkgs `lib` —
-**ignore them**, they're noise from nixpkgs, not this config.
+nix-darwin recommends Lix on macOS for its clean uninstaller and survival across macOS upgrades.
+Expect harmless `using 'or' as an identifier is deprecated` warnings while Lix evaluates nixpkgs
+`lib` — **ignore them**, they're nixpkgs noise.
 
-### `nix.enable = false` — IMPORTANT, do not change
-The Lix installer owns the Nix installation, its daemon, and `/etc/nix/nix.conf`. nix-darwin by
-default also wants to manage all of that, which collides (`error: Unexpected files in /etc`).
-`nix.enable = false` tells nix-darwin to leave Nix alone and only manage macOS/system config.
+### `nix.enable = false` — do not change
+The Lix installer owns the Nix installation, its daemon, and `/etc/nix/nix.conf`. nix-darwin's
+default is to manage all of that too, which collides (`error: Unexpected files in /etc`).
+`nix.enable = false` tells nix-darwin to leave Nix alone.
 
-- **Do NOT** rename `/etc/nix/nix.conf` to hand it to nix-darwin — that produces dueling daemons.
-- Consequence: the `nix.*` options (`nix.settings.*`, Linux builder, etc.) are **unavailable**.
-  Extra Nix settings (substituters, trusted-users, binary caches) go in `/etc/nix/nix.custom.conf`,
-  which the Lix-generated `nix.conf` already `!include`s at the bottom.
+- **Do NOT** rename `/etc/nix/nix.conf` to hand it to nix-darwin — dueling daemons.
+- The `nix.*` options (`nix.settings.*`, Linux builder, etc.) are **unavailable**. Extra Nix
+  settings (substituters, trusted-users, binary caches) go in `/etc/nix/nix.custom.conf`, which
+  the Lix-generated `nix.conf` already `!include`s at the bottom.
 - Flakes + `nix-command` are already enabled globally by the installer.
 
-### nixpkgs on stable 25.11; Home Manager matched to `release-25.11`
-- `nixpkgs` is pinned to `nixpkgs-25.11-darwin` (stable base).
-- `home-manager` **must** track the matching `release-25.11` branch. Using HM `master` against
-  stable nixpkgs caused an eval failure (`lib/services/...: No such file or directory`) because
-  master expects *unstable's* `lib`. **Rule: HM branch must match the nixpkgs branch.** If nixpkgs
-  ever moves to unstable, move HM to `master` at the same time.
-- HM release branches get bug fixes but rarely *new modules*, so a brand-new HM module may only
-  exist on `master`. Check availability before relying on one.
+### nixpkgs on stable 25.11; Home Manager matched
+- `nixpkgs` is pinned to `nixpkgs-25.11-darwin`.
+- `home-manager` **must** track `release-25.11`. Using HM `master` against stable nixpkgs caused
+  an eval failure (`lib/services/...: No such file or directory`) because master expects
+  *unstable's* `lib`. **HM branch must match the nixpkgs branch.** If nixpkgs ever moves to
+  unstable, move HM to `master` at the same time.
+- HM release branches get bug fixes but rarely *new modules*. A brand-new HM module may only
+  exist on `master` — check before relying on one.
 
 ### Selective unstable overlay
 Some packages move faster than the stable channel can backport (Claude Code ships ~weekly;
-JetBrains IDEs get minor-version bumps every few months that release-25.11 will never see). An
-overlay (`unstableOverlay`) pulls **specific** packages from `nixpkgs-unstable`, leaving everything
-else on stable 25.11. Currently overridden: `claude-code`, `prek`, `jetbrains.pycharm`. For
-`jetbrains.*` the override merges (`prev.jetbrains // { … }`) so other JetBrains IDEs would still
-come from stable. Reuse this pattern for any other single package that needs to be fresher than
-the stable pin.
+JetBrains IDEs get minor-version bumps every few months that release-25.11 will never see).
+`unstableOverlay` pulls **specific** packages from `nixpkgs-unstable`, leaving everything else
+on stable. Currently overridden: `claude-code`, `prek`, `jetbrains.pycharm`. For `jetbrains.*`
+the override merges (`prev.jetbrains // { … }`) so other JetBrains IDEs would still come from
+stable. Reuse this pattern for any package that needs to be fresher than the pin.
 
 ### `allowUnfree`
-`nixpkgs.config.allowUnfree = true` is required for proprietary packages (`claude-code`, `vscode`,
-`jetbrains.pycharm`). Narrow it to an `allowUnfreePredicate` if stricter control is
-ever wanted.
+`nixpkgs.config.allowUnfree = true` is required for proprietary packages (`claude-code`,
+`vscode`, `jetbrains.pycharm`). Narrow to an `allowUnfreePredicate` if stricter control is wanted.
 
 ### Home Manager as a nix-darwin module
-HM runs as a darwin module with `useGlobalPkgs = true` (so HM uses the system `pkgs` **with overlays
-applied** — this is how VS Code extensions and the Claude Code overlay reach HM) and
-`useUserPackages = true`. The user environment is built and switched together with the system on
-every rebuild. `backupFileExtension = "hm-backup"` is set so HM moves any pre-existing
-non-Nix-managed files (e.g. a hand-written VS Code `settings.json`) aside instead of refusing to
-activate.
+HM runs as a darwin module with `useGlobalPkgs = true` (so HM uses the system `pkgs` **with
+overlays applied** — this is how VS Code extensions and the unstable overlay reach HM) and
+`useUserPackages = true`. `backupFileExtension = "hm-backup"` is set so HM moves pre-existing
+non-Nix-managed files aside instead of refusing to activate.
 
-## Per-tool notes
+### `nix-homebrew` for signed/path-locked GUI apps
+`nix-homebrew` installs and pins Homebrew itself (no manual `curl | bash`); `homebrew.*` in
+`flake.nix` then declares casks. On first activation you'll get a `sudo` prompt to take
+ownership of `/opt/homebrew`.
 
-### Claude Code
-- Installed via Nix using `programs.claude-code` (overlaid to the unstable build via
-  `unstableOverlay`).
-- Self-updater disabled via `home.sessionVariables.DISABLE_AUTOUPDATER = "1"` — it cannot write into
-  the read-only store. **Update it through Nix**, never its built-in updater.
-- The `claude symlink points to an invalid binary` warning is a harmless false positive: Nix wraps
-  it as a script rather than the large binary Claude Code expects.
-- IDE integrations are also Nix-managed: the **VS Code** extension comes from
-  `pkgs.vscode-extensions.anthropic.claude-code` (see the VS Code section); the **PyCharm**
-  plugin is wrapped into the IDE bundle via `jetbrains.plugins.addPlugins` (see the PyCharm
-  Professional section). Both update independently of the CLI — bumping `claude-code` doesn't
-  bump them.
+Homebrew is used **only** for apps that path-check `/Applications` or require an intact Apple
+designated-requirement code signature (Nix's wrap step invalidates the signature; HM lands apps
+in `~/Applications/Home Manager Apps/` instead of `/Applications`). Everything else stays on Nix.
 
-### VS Code
-- Managed by `programs.vscode` (declarative) under `profiles.default`.
-- `settings.json` is now **Nix-owned** — editing it in-app won't persist. Change `userSettings` in
-  `home.nix` instead.
-- Extensions are declared in `profiles.default.extensions` from `pkgs.vscode-extensions`.
-  The marketplace overlay is large but well-curated — most extensions resolve as
-  `<publisher>.<name>` (e.g. `anthropic.claude-code`). If an extension isn't in the overlay
-  set, use `pkgs.vscode-utils.extensionFromVscodeMarketplace` with the publisher, name, and
-  version + hash. **Disable VS Code's in-app extension updater** for Nix-managed extensions
-  — the store is read-only; bump versions through Nix instead.
-- The app installs to `~/Applications/Home Manager Apps/` (not `/Applications`); Spotlight and
-  `open -a "Visual Studio Code"` still find it there.
-- First eval after adding it is slow/heavy because the Marketplace overlay set is enormous;
-  subsequent rebuilds are fine.
-- Updates via Nix, not VS Code's own updater.
-
-### 1Password
-- **Both** the desktop app and the `op` CLI come from Homebrew
-  (`homebrew.casks = [ "1password" "1password-cli" ]` in `flake.nix`), not Nix.
-- Desktop app: `pkgs._1password-gui` is unusable on macOS — 1Password's runtime
-  self-check refuses to run anywhere except `/Applications/1Password.app`, and
-  Home Manager apps land in `~/Applications/Home Manager Apps/`. Homebrew installs
-  into `/Applications`, which keeps 1Password happy.
-- CLI: `pkgs._1password-cli` *runs* fine standalone, but the desktop ↔ CLI biometric
-  unlock handshake verifies AgileBits' designated code-signature requirement on the
-  `op` binary. Nix's build/wrap step invalidates that signature, so
-  *Settings → Developer → Integrate with 1Password CLI* will silently fail to unlock
-  via the desktop app. The Homebrew cask ships the upstream signed binary as-is.
-- All account state — sign-in, sync, browser extension pairing, SSH agent, biometric
-  unlock — is configured inside the 1Password app and persisted under
-  `~/Library/Group Containers/` and `~/Library/Containers/`, **not Nix-managed**.
-- Enable *Settings → Developer → Integrate with 1Password CLI* in the app once after
-  install — that's what wires `op` to Touch ID / desktop unlock.
-- Updates: both casks refresh on every `darwin-rebuild` (because
-  `homebrew.onActivation.upgrade = true`). Don't use 1Password's in-app updater.
-
-### OrbStack
-- Docker Desktop / lightweight Linux-VM app, installed via Homebrew
-  (`homebrew.casks` in `flake.nix`), not Nix.
-- Why Homebrew: OrbStack installs a privileged helper (`OrbStackHelper`) and
-  network components that depend on Apple's designated-requirement code
-  signature and on `/Applications/OrbStack.app` being its install path. Nix's
-  build/wrap step invalidates the signature, and Home Manager would land it in
-  `~/Applications/Home Manager Apps/` — the helper handshake fails in both
-  cases. (A `pkgs.orbstack` exists but isn't viable for the same reason
-  `pkgs._1password-gui` isn't.)
-- First launch: grant the requested permissions (System Settings → Privacy &
-  Security) and let it install its CLI shims (`docker`, `docker compose`,
-  `orb`, `orbctl`) into `/usr/local/bin`. These come from OrbStack itself —
-  do NOT also install `pkgs.docker` or `pkgs.docker-compose`, or you'll get
-  PATH conflicts.
-- VM state, container images, and settings live under `~/.orbstack/` and
-  `~/Library/Group Containers/HUAQ24HBR6.dev.orbstack/`, **not Nix-managed**.
-- Updates via Nix activation (`homebrew.onActivation.upgrade = true` refreshes
-  the cask). Don't use OrbStack's in-app updater.
-
-### Raycast
-- Spotlight replacement / launcher, installed via Homebrew (`homebrew.casks`
-  in `flake.nix`), not Nix.
-- Why Homebrew: Raycast registers a Login Items helper via Apple's Service
-  Management framework, captures a system-wide hotkey, and loads
-  community-published extensions that path-check the host bundle. All of this
-  is tied to the official code signature and the `/Applications/Raycast.app`
-  install path. Nix's wrap step invalidates the signature and HM would land
-  it in `~/Applications/Home Manager Apps/`, so the launch-at-login
-  registration and several extensions silently fail.
-- First launch: grant Accessibility *and* Input Monitoring in
-  System Settings → Privacy & Security, then run through Raycast's onboarding
-  to set the hotkey (default ⌥Space — collides with Spotlight, which Raycast's
-  onboarding offers to disable).
-- Account state, installed extensions, snippets, quicklinks, and Raycast Pro
-  cloud-sync credentials live under `~/Library/Application Support/com.raycast.macos/`
-  and `~/Library/Preferences/com.raycast.macos.plist`, **not Nix-managed**.
-- Updates via Nix activation (`homebrew.onActivation.upgrade = true` refreshes
-  the cask). Don't use Raycast's in-app updater.
-
-### Bartender
-- Menu-bar organizer (hides/groups menu-bar items), installed via Homebrew
-  (`homebrew.casks` in `flake.nix`), not Nix (not in nixpkgs anyway — it's
-  a commercial, closed-source app).
-- Why Homebrew: Bartender uses Screen Recording + Accessibility to read and
-  redraw the menu bar, and its entitlements are tied to Apple's
-  designated-requirement code signature. Nix's wrap step would invalidate the
-  signature, and the macOS TCC database keys permissions to a bundle path +
-  signature pair — so even after re-granting, the helper would not be able to
-  read the menu bar reliably. Homebrew ships the upstream signed `.app`
-  into `/Applications` as-is.
-- First launch: grant **Screen Recording** *and* **Accessibility** in System
-  Settings → Privacy & Security. Without Screen Recording, hidden icons
-  render as blanks; without Accessibility, clicks pass through to the wrong
-  menu items. Macs may require a logout after granting Screen Recording.
-- Licence/account state lives inside the app and under
-  `~/Library/Application Support/com.surteesstudios.Bartender/` and
-  `~/Library/Preferences/com.surteesstudios.Bartender.plist`, **not Nix-managed**.
-- Updates via Nix activation (`homebrew.onActivation.upgrade = true` refreshes
-  the cask). Don't use Bartender's in-app updater.
-
-### Ghostty
-- Terminal emulator, installed via Homebrew (`homebrew.casks` in `flake.nix`), not Nix.
-- Why Homebrew: `pkgs.ghostty` on Darwin has historically been fragile — Ghostty's macOS build
-  requires a Swift/Xcode toolchain that nixpkgs cannot cleanly reproduce, so the Darwin package
-  has lagged or broken across releases. The Homebrew cask ships the upstream signed `.app` into
-  `/Applications` as-is. (Revisit moving to Nix once `pkgs.ghostty` on `aarch64-darwin` is
-  reliable.)
-- Configuration: `~/.config/ghostty/config` is **Nix-owned** via `xdg.configFile` in `home.nix`
-  (Ghostty reads both the XDG path and `~/Library/Application Support/com.mitchellh.ghostty/config`
-  on macOS). Editing the config inside the app will fail silently — change `home.nix` and
-  rebuild instead. `auto-update = off` is set there to suppress Sparkle's first-launch prompt;
-  updates flow through Homebrew on `darwin-rebuild` instead. If config grows, consider migrating
-  to the HM `programs.ghostty` module (lives on HM `master` — verify availability on
-  `release-25.11` first).
-- Updates via Nix activation (`homebrew.onActivation.upgrade = true` refreshes the cask). Don't
-  use Ghostty's in-app updater.
-
-### Microsoft Outlook
-- Microsoft 365 mail/calendar/contacts client, installed via Homebrew (`homebrew.casks` in
-  `flake.nix`), not Nix.
-- Why Homebrew: not in nixpkgs (Microsoft 365 desktop apps generally aren't), and even if it
-  were, Outlook ships as a sandboxed Mac App Store-style bundle whose entitlements
-  (notifications, contacts, calendar, keychain for Microsoft 365 sign-in, AutoUpdate helper)
-  are tied to Apple's designated-requirement code signature and to the
-  `/Applications/Microsoft Outlook.app` install path. Nix's wrap step invalidates the
-  signature and HM would land it in `~/Applications/Home Manager Apps/`, breaking sign-in
-  and notifications. Homebrew ships the upstream signed `.app` into `/Applications` as-is.
-- First launch: sign in to the Microsoft 365 account and grant the requested permissions
-  in System Settings → Privacy & Security (Notifications, Contacts, Calendar). Outlook will
-  also prompt to enable its menu-bar/notification badge — accept once.
-- Account state, mail caches, signatures, rules, and sign-in tokens live under
-  `~/Library/Containers/com.microsoft.Outlook/` and
-  `~/Library/Group Containers/UBF8T346G9.Office/`, **not Nix-managed**.
-- App-level prefs **are** Nix-managed via `system.defaults.CustomUserPreferences` on the
-  `com.microsoft.Outlook` and `com.microsoft.office` domains in `flake.nix`. Outlook is
-  sandboxed, but Microsoft documents `defaults write com.microsoft.Outlook …` as the
-  supported preference mechanism — CFPreferences redirects writes through to the
-  container plist. Currently set: `AutomaticallyDownloadExternalContent = false` (block
-  remote tracking pixels), `FocusedInbox = false` (single chronological inbox), and
-  Office-wide `DiagnosticDataTypePreference = "BasicTelemetry"` (lowest telemetry level
-  available on consumer accounts; `ZeroTelemetry` is enterprise-only). Add new keys here,
-  not in-app — most Outlook prefs the UI exposes have a documented plist key on Microsoft
-  Learn under *Set preferences for Outlook for Mac*.
-- Microsoft AutoUpdate (MAU) is installed alongside Outlook by the cask. MAU is
-  **disabled declaratively** via
-  `system.defaults.CustomUserPreferences."com.microsoft.autoupdate2".HowToCheck = "Manual"`
-  in `flake.nix`, so updates flow through `darwin-rebuild` via the Homebrew cask refresh
-  (`homebrew.onActivation.upgrade = true`), not MAU's auto-installer. The pref applies to
-  any other Office app installed later, too. (MAU is a non-sandboxed helper, so its prefs
-  live at `~/Library/Preferences/com.microsoft.autoupdate2.plist` and the standard
-  `defaults write` mechanism nix-darwin uses works as expected.)
-
-### Slack
-- Team chat client, installed via Homebrew (`homebrew.casks` in `flake.nix`), not Nix.
-- Why Homebrew: `pkgs.slack` exists but is an Electron app whose entitlements
-  (notifications, microphone/camera for huddles, screen recording for screen
-  sharing, keychain for workspace sign-in, the autoupdater helper) are tied to
-  Slack's designated-requirement code signature and to the
-  `/Applications/Slack.app` install path. Nix's wrap step invalidates the
-  signature and HM would land it in `~/Applications/Home Manager Apps/`, which
-  breaks workspace sign-in (the TCC database rejects the re-signed bundle when
-  it tries to use Keychain) and silently disables screen-share. Homebrew ships
-  the upstream signed `.app` into `/Applications` as-is.
-- First launch: sign in to workspaces and grant the requested permissions in
-  System Settings → Privacy & Security (Notifications, Microphone, Camera,
-  Screen Recording — the last one is required for screen sharing in huddles).
-  A logout/login is sometimes needed after granting Screen Recording.
-- Workspace state, message caches, sign-in tokens, and per-workspace settings
-  live under `~/Library/Application Support/Slack/` and
-  `~/Library/Containers/com.tinyspeck.slackmacgap/`, **not Nix-managed**. Slack
-  is a Mac App Store-style sandboxed bundle when installed from the cask
-  (`com.tinyspeck.slackmacgap` is the App Store ID; the cask installs the
-  direct-download non-MAS build with the same container path).
-- Updates via Nix activation (`homebrew.onActivation.upgrade = true` refreshes
-  the cask). Slack's in-app updater is harmless (it can write to
-  `/Applications` since the cask doesn't lock it down), but disabling it keeps
-  the version in lockstep with what's pinned through Nix — toggle off in
-  *Preferences → Advanced → "Automatically update Slack"*.
-
-### Todoist
-- Task manager client, installed via Homebrew (`homebrew.casks` in `flake.nix`),
-  not Nix (not in nixpkgs).
-- Why Homebrew: Todoist registers a Login Items helper via Apple's Service
-  Management framework for "launch at login", captures a global quick-add
-  hotkey, and uses keychain for Doist account sign-in. All three are bound to
-  the designated-requirement code signature and the `/Applications/Todoist.app`
-  install path. Homebrew ships the upstream signed `.app` into `/Applications`
-  as-is.
-- First launch: sign in to the Doist account and grant Notifications in
-  System Settings → Privacy & Security. Accept the "Launch at login" prompt
-  if you want the menu-bar item to start automatically. Set the global hotkey
-  in *Settings → General → Keyboard shortcuts* if needed (collides with
-  nothing by default — Todoist ships with no hotkey set).
-- Account state, task caches, offline queue, and the menu-bar item's settings
-  live under `~/Library/Containers/com.todoist.mac.Todoist/` and
-  `~/Library/Application Support/com.todoist.mac.Todoist/`, **not Nix-managed**.
-  Tasks themselves live in Doist's cloud — the local store is just a cache.
-- Updates via Nix activation (`homebrew.onActivation.upgrade = true` refreshes
-  the cask). Don't use Todoist's in-app updater.
-
-### PyCharm Professional
-- Installed via `pkgs.jetbrains.pycharm` in `home.packages`, overlaid to the
-  unstable build via `unstableOverlay` because the 25.11 stable channel never backports
-  JetBrains minor-version bumps (e.g. 2025.3 → 2026.1). Unstable typically lags JetBrains
-  releases by 1–4 weeks.
-- Lands at `~/Applications/Home Manager Apps/PyCharm Professional Edition.app`; Spotlight
-  finds it.
-- **Disable the in-app updater** on first launch: Settings → Appearance & Behavior → System
-  Settings → Updates → uncheck "Check IDE updates for…". The store is read-only, so any
-  attempt to apply an update will fail. Update via Nix instead.
-- Project SDKs and per-project run configs are not Nix-managed — they live under
-  `~/Library/Application Support/JetBrains/PyCharm<version>/` and the project's `.idea/`.
-- **Plugins are Nix-managed** via `jetbrains.plugins.addPlugins`, which wraps the IDE
-  derivation and links plugin contents into its `plugins/` directory at build time. The
-  store path of the wrapped IDE changes (becomes `pycharm-with-plugins-…`), so the first
-  rebuild after adding/removing a plugin re-links `~/Applications/Home Manager Apps/PyCharm
-  Professional Edition.app` — Spotlight may briefly re-index. The wrapper requires a
-  **derivation**, not a string ID (the old API was removed); use `pkgs.fetchzip` against
-  the JetBrains Marketplace `.zip` URL and pin its SRI hash. Find latest updates and check
-  build compatibility (`since`/`until`) via the JSON API at
-  `https://plugins.jetbrains.com/api/plugins/<id>/updates`. Update a plugin by bumping
-  `url` + `hash` in `home.nix` — **disable the IDE's own plugin auto-updater**, it tries to
-  write into the read-only store. Plugins not added through Nix (installed in-IDE) keep
-  working and live under `~/Library/Application Support/JetBrains/PyCharm<version>/plugins/`,
-  but mixing the two means the in-IDE plugin UI shows Nix-managed plugins as bundled and
-  refuses to disable/uninstall them. Currently Nix-managed: **Claude Code** (plugin 27310).
-- **Keymap is Nix-managed**: `pycharm/custom-keymap.xml` is symlinked into
-  `~/Library/Application Support/JetBrains/PyCharm2026.1/keymaps/` via `home.file` in
-  `home.nix`. Two consequences: (1) editing the keymap inside PyCharm fails silently (target is
-  read-only in the Nix store) — edit the XML in the repo and rebuild instead; (2) the destination
-  path is **version-pinned**, so after a JetBrains minor-version bump (e.g. `PyCharm2026.1` →
-  `PyCharm2026.2`) the symlink will silently land in the old, unused dir until you update the
-  path in `home.nix`. Select the keymap once in *Settings → Keymap* after first activation —
-  it appears under its `name=` attribute ("Default for macOS copy").
-- Activation/licence sign-in happens inside the app and is persisted under
-  `~/Library/Application Support/JetBrains/`, not Nix-managed.
-
-### Rectangle
-- Magnet-style window-snapping app, installed via `pkgs.rectangle` in `home.packages`. The
-  nixpkgs package fetches the official .dmg and unpacks `Rectangle.app` into the store; HM
-  surfaces it at `~/Applications/Home Manager Apps/Rectangle.app`, where Spotlight finds it.
-- Configuration (keybindings, snap areas, "launch on login") lives in Rectangle's own
-  preferences UI and is persisted to `~/Library/Preferences/com.knollsoft.Rectangle.plist`,
-  which is *not* Nix-managed. If you ever want it declarative, set the matching
-  `defaults`-style keys via `system.defaults.CustomUserPreferences."com.knollsoft.Rectangle"`.
-- Needs Accessibility permission (System Settings → Privacy & Security → Accessibility) on
-  first launch, or it can't move windows.
-- Updates via Nix, not Rectangle's own updater.
-- Config lives at `~/.config/aerospace/aerospace.toml` and is Nix-owned (symlinked into the
-  store). Edits to it won't persist — change `userSettings` in `home.nix` instead.
-
-### prek
-- Rust reimplementation of `pre-commit`, installed via `pkgs.prek` in `home.packages`. Overlaid
-  to the unstable build via `unstableOverlay` because it's a fast-moving 0.x tool and the stable
-  25.11 channel will lag releases (stable was 0.2.17, unstable 0.3.11 at install time).
-- Per-repo hook config (`.pre-commit-config.yaml`) is the same format as upstream `pre-commit`
-  and lives in each project repo — not Nix-managed.
-- Update via Nix (`nix flake update nixpkgs-unstable` + rebuild). No self-updater to disable.
-
-### git
-- `programs.git` manages identity and `~/.gitconfig` declaratively. Installing git via Nix avoids
-  Apple's Command Line Tools prompt. (CLT is still needed only for build systems that hardcode
-  `/usr/bin/git` or require Apple SDK headers.)
-
-### Homebrew (via nix-homebrew)
-- `nix-homebrew` installs and pins Homebrew itself (no manual `curl | bash`). The
-  `homebrew.*` options in `flake.nix` then declare what gets installed via it. Apple
-  Silicon Homebrew lives at `/opt/homebrew`; the module owns it on first activation
-  (you'll get a `sudo` prompt to take ownership).
-- **Used only** for packages that don't tolerate the Nix store layout — either GUI apps
-  that path-check against `/Applications`, or binaries whose Apple code signature must
-  be preserved (Nix's build/wrap step invalidates upstream signatures). Currently:
-  `1password`, `1password-cli`, `orbstack`, `raycast`, `bartender`, and `ghostty`.
-  Everything else stays on Nix.
-- `enableRosetta = false`. Flip to `true` only if an x86_64-only cask needs to be
-  installed alongside the native aarch64 brew (rare).
-- `homebrew.onActivation.upgrade = true`, so casks update on every `darwin-rebuild`.
-  `homebrew.onActivation.autoUpdate = false` keeps activation deterministic — Homebrew
-  itself isn't refreshed implicitly; `nix flake update nix-homebrew` is the bump knob.
-- `homebrew.onActivation.cleanup = "none"` for now. Flipping to `"zap"` would uninstall
-  any cask/brew not declared in `flake.nix`. Audit `brew list` against the config before
-  changing this — otherwise a rebuild silently nukes hand-installed casks.
-- `mutableTaps` is not pinned, so taps stay in their normal Homebrew-managed location
-  and `brew tap …` still works ad hoc. Cask/brew declarations stay declarative via
-  `homebrew.casks` / `homebrew.brews`.
-
-## General rules for Nix-installed tools
-- **Never** rely on a tool's self-updater — the store is read-only. Update with
-  `nix flake update` + rebuild.
-- GUI apps: prefer a `programs.*` module where one exists (declarative). Otherwise use Homebrew
-  casks for best `/Applications` integration — nixpkgs doesn't fully replace Homebrew for GUI apps.
+Options: `enableRosetta = false`, `onActivation.upgrade = true`, `onActivation.autoUpdate = false`
+(activation stays deterministic — bump via `nix flake update nix-homebrew`),
+`onActivation.cleanup = "none"`. **Do not flip cleanup to `"zap"`** without first auditing
+`brew list` against the config — it silently uninstalls anything not declared.
 
 ### Touch ID for sudo
 Enabled via `security.pam.services.sudo_local.touchIdAuth = true` — writes `/etc/pam.d/sudo_local`,
-which survives macOS updates. Touch ID does **not** work inside tmux without the `pam_reattach`
-module; add it there if/when tmux is in use.
+which survives macOS updates. Does **not** work inside tmux without the `pam_reattach` module.
+
+## Conventions
+
+These apply to every tool unless its note says otherwise:
+
+- **Never use a tool's self-updater.** The store is read-only. Update via `nix flake update` +
+  rebuild (Nix) or via the cask refresh on rebuild (Homebrew). Disable in-app updaters where
+  exposed — see *First-use setup → In-app toggles*.
+- **GUI apps:** prefer `programs.*` HM modules where they exist (declarative), otherwise Homebrew
+  cask. nixpkgs doesn't fully replace Homebrew for signed/path-locked GUI apps.
+- **Per-app state** (sign-ins, caches, prefs, licences) lives under `~/Library/...` and is **not
+  Nix-managed** unless the per-tool note says otherwise.
+- **Compatibility tags** below: `(Nix)` / `(Homebrew)` is the install mechanism;
+  `(unstable overlay)` means it's pulled from `nixpkgs-unstable`; `(Nix-managed config)` /
+  `(Nix-managed prefs)` / `(Nix-managed plugins)` means that specific piece is declarative and
+  in-app edits won't persist.
+
+## Per-tool notes
+
+Only surprising or unique-to-this-config facts. Permissions and sign-ins live in *First-use
+setup*; install/update mechanism is captured in the tag.
+
+### Claude Code `(Nix, unstable overlay)`
+Installed via `programs.claude-code`. Self-updater disabled via
+`home.sessionVariables.DISABLE_AUTOUPDATER = "1"` (it cannot write into the store). The
+`claude symlink points to an invalid binary` warning is a harmless false positive — Nix wraps
+it as a script rather than the binary the CLI expects. The VS Code extension (see VS Code) and
+PyCharm plugin (see PyCharm) are managed separately and update independently of the CLI.
+
+### VS Code `(Nix, Nix-managed config + extensions)`
+Managed by `programs.vscode` under `profiles.default`. `settings.json` is Nix-owned — edit
+`userSettings` in `home.nix`, not in-app. Extensions come from `pkgs.vscode-extensions` (resolve
+as `<publisher>.<name>`, e.g. `anthropic.claude-code`); for extensions not in the overlay set
+use `pkgs.vscode-utils.extensionFromVscodeMarketplace` with publisher, name, version, and SRI
+hash. Disable VS Code's in-app extension updater — the store is read-only. App lands at
+`~/Applications/Home Manager Apps/`; Spotlight and `open -a` still find it. First eval after
+adding it is slow because the marketplace overlay set is enormous; subsequent rebuilds are fine.
+
+### PyCharm Professional `(Nix, unstable overlay, Nix-managed plugins + keymap)`
+Pulled from unstable because release-25.11 won't backport JetBrains minor-version bumps. Lands at
+`~/Applications/Home Manager Apps/PyCharm Professional Edition.app`.
+
+**Keymap** at `pycharm/custom-keymap.xml` is symlinked into
+`~/Library/Application Support/JetBrains/PyCharm2026.1/keymaps/` via `home.file`. Edits inside
+PyCharm fail silently (read-only store target) — edit the XML in the repo. The destination path
+is **version-pinned**, so after a JetBrains minor-version bump (e.g. `PyCharm2026.1` →
+`PyCharm2026.2`) update the path in `home.nix` or the symlink lands in the wrong directory.
+
+Project SDKs, run configs, and JetBrains licence sign-in are **not** Nix-managed.
+
+### Rectangle `(Nix)`
+Fetched from the official `.dmg` by nixpkgs. Prefs (keybindings, snap areas, "launch on login")
+are **not** Nix-managed; could be promoted via
+`system.defaults.CustomUserPreferences."com.knollsoft.Rectangle"` if needed.
+
+### prek `(Nix, unstable overlay)`
+Rust reimplementation of `pre-commit`. On unstable because it's a fast-moving 0.x tool the
+stable channel lags on (0.2.x on stable vs 0.3.x on unstable at install time). No self-updater.
+
+### git `(Nix)`
+`programs.git` manages identity and `~/.gitconfig`. Installing git via Nix sidesteps Apple's
+Command Line Tools prompt. CLT is still needed only for build systems that hardcode
+`/usr/bin/git` or require Apple SDK headers.
+
+### 1Password + 1Password CLI `(Homebrew)`
+`pkgs._1password-gui` fails 1Password's runtime check (refuses to run outside `/Applications`).
+`pkgs._1password-cli` runs fine standalone, but the desktop ↔ CLI biometric handshake verifies
+AgileBits' code-signature requirement on `op`; Nix's wrap step invalidates that signature, so
+*Settings → Developer → Integrate with 1Password CLI* silently fails to unlock via the desktop
+app. Homebrew ships both signed binaries as-is.
+
+### OrbStack `(Homebrew)`
+Installs a privileged helper (`OrbStackHelper`) and CLI shims (`docker`, `docker compose`,
+`orb`, `orbctl`) into `/usr/local/bin`. **Do not also install `pkgs.docker` or
+`pkgs.docker-compose`** — PATH conflicts.
+
+### Raycast `(Homebrew)`
+Registers a Login Items helper, captures a system-wide hotkey, loads community extensions that
+path-check the host bundle. Default hotkey ⌥Space collides with Spotlight — onboarding offers
+to disable Spotlight.
+
+### Bartender `(Homebrew)`
+Menu-bar organiser. Not in nixpkgs (commercial, closed-source). Without Screen Recording,
+hidden icons render as blanks; without Accessibility, clicks pass through to the wrong items.
+
+### Ghostty `(Homebrew, Nix-managed config)`
+Terminal emulator. `pkgs.ghostty` on Darwin is historically fragile (needs Swift/Xcode toolchain
+nixpkgs can't cleanly reproduce). Config at `~/.config/ghostty/config` is Nix-owned via
+`xdg.configFile` (Ghostty reads the XDG path on macOS). `auto-update = off` is set there to
+suppress Sparkle's first-launch prompt. Editing config in-app fails silently. If config grows,
+consider migrating to the HM `programs.ghostty` module — verify it's on `release-25.11` first.
+
+### Microsoft Outlook `(Homebrew, Nix-managed prefs)`
+App-level prefs are Nix-managed via `system.defaults.CustomUserPreferences` on the
+`com.microsoft.Outlook` and `com.microsoft.office` domains. This works for a sandboxed app
+because Microsoft documents `defaults write com.microsoft.Outlook …` as the supported pref
+mechanism — CFPreferences redirects writes through to the container plist
+(`~/Library/Group Containers/UBF8T346G9.Office/`). Currently set:
+`AutomaticallyDownloadExternalContent = false` (block tracking pixels), `FocusedInbox = false`,
+Office-wide `DiagnosticDataTypePreference = "BasicTelemetry"` (lowest level on consumer
+accounts; `ZeroTelemetry` is enterprise-only). Add new keys here, not in-app — look them up on
+Microsoft Learn under *Set preferences for Outlook for Mac*.
+
+Microsoft AutoUpdate (MAU) is **disabled** declaratively via
+`"com.microsoft.autoupdate2".HowToCheck = "Manual"`, so updates flow through the Homebrew cask
+refresh on rebuild. The pref applies to any other Office app installed later.
+
+### Slack `(Homebrew)`
+Sandboxed bundle. The in-app updater is harmless but disabling it via
+*Preferences → Advanced → "Automatically update Slack"* keeps the version in lockstep with the
+Nix pin.
+
+### Todoist `(Homebrew)`
+Not in nixpkgs. Registers a Login Items helper for "launch at login".
+
+## First-use setup
+
+Run through these on a fresh machine after the first `darwin-rebuild switch`.
+
+### Sign-ins
+- **1Password** — account; then *Settings → Developer → Integrate with 1Password CLI*.
+- **Microsoft Outlook** — Microsoft 365 account.
+- **Slack** — workspaces.
+- **Todoist** — Doist account.
+- **PyCharm Professional** — JetBrains licence.
+
+### System permissions (System Settings → Privacy & Security)
+- **Accessibility:** Rectangle, Raycast, Bartender.
+- **Screen Recording:** Bartender (hidden icons), Slack (huddle screen-share). A logout may be
+  required after granting Screen Recording.
+- **Input Monitoring:** Raycast.
+- **Notifications:** Outlook, Slack, Todoist.
+- **Contacts + Calendar:** Outlook.
+- **Microphone + Camera:** Slack (huddles).
+
+### In-app one-time toggles
+Mostly disabling self-updaters; the read-only store would break them anyway.
+- **VS Code:** disable in-app extension updater.
+- **PyCharm:** *Settings → Appearance & Behavior → System Settings → Updates* → uncheck
+  "Check IDE updates for…"; also disable plugin auto-updater.
+- **PyCharm:** *Settings → Keymap* → select "Default for macOS copy" (the Nix-managed keymap).
+- **Raycast:** set hotkey (onboarding offers to disable Spotlight first).
+- **Slack:** *Preferences → Advanced* → uncheck "Automatically update Slack".
+- **Todoist:** accept "Launch at login" prompt if you want the menu-bar item to autostart.
+
+## Routine maintenance
+
+- Update one input then rebuild: `nix flake update <input>` (e.g. `nixpkgs-unstable`).
+- Update everything then rebuild: `nix flake update`.
+- Bump Homebrew itself: `nix flake update nix-homebrew`. Casks refresh on every rebuild
+  (`homebrew.onActivation.upgrade = true`).
+- Bump a JetBrains plugin: update `url` + `hash` in `home.nix`. Find latest at
+  `https://plugins.jetbrains.com/api/plugins/<id>/updates`.
+- After a PyCharm minor-version bump (e.g. `2026.1 → 2026.2`): update the version-pinned keymap
+  symlink path in `home.nix`, otherwise the keymap silently lands in the old unused directory.
