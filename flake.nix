@@ -50,6 +50,9 @@
           # Hide "Recent applications" section in the Dock.
           system.defaults.dock.show-recents = false;
 
+          # Hot corners: top-right → Show Desktop (4). 1 = disabled.
+          system.defaults.dock.wvous-tl-corner = 4;
+
           # Dock contents: Finder is always pinned leftmost by macOS, so
           # persistent-apps only covers what comes after it.
           system.defaults.dock.persistent-apps = [

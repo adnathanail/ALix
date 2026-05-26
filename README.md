@@ -50,6 +50,7 @@ nix run nix-darwin/master#darwin-rebuild -- switch --flake ~/.config/nix-darwin
 - Touch ID for sudo
 - Window tiling (Rectangle)
 - Raycast
+- Top left hot corner: Show desktop
 
 ### CLIs
 
