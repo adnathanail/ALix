@@ -17,8 +17,14 @@ Machine facts:
 - **Platform:** Apple Silicon (`aarch64-darwin`)
 - **Nix implementation:** **Lix** (a fork of Nix — *not* upstream Nix), installed via the Lix installer
 
-## How to apply changes
+## Making changes
 
+Custom command
+```bash
+nix-switch
+```
+
+Raw command (backup)
 ```bash
 sudo darwin-rebuild switch --flake ~/.config/nix-darwin
 ```
@@ -26,6 +32,8 @@ sudo darwin-rebuild switch --flake ~/.config/nix-darwin
 **Rule: DO NOT REBUILD — ASK THE USER TO DO SO.**
 
 Activation must run as root. See *Routine maintenance* below for `nix flake update` patterns.
+
+**Rule: Add new software/tools/config to the README.md**
 
 ## Key architectural decisions
 
@@ -204,6 +212,10 @@ Nix pin.
 ### Todoist `(Homebrew)`
 Not in nixpkgs. Registers a Login Items helper for "launch at login".
 
+### Fantastical `(Homebrew)`
+Calendar app by Flexibits. Not in nixpkgs (commercial, closed-source). Free tier works without
+a Flexibits account; sign in for paid features. Registers a menu-bar item.
+
 ## First-use setup
 
 Run through these on a fresh machine after the first `darwin-rebuild switch`.
@@ -214,14 +226,15 @@ Run through these on a fresh machine after the first `darwin-rebuild switch`.
 - **Slack** — workspaces.
 - **Todoist** — Doist account.
 - **PyCharm Professional** — JetBrains licence.
+- **Fantastical** — Flexibits account (only needed for paid features).
 
 ### System permissions (System Settings → Privacy & Security)
 - **Accessibility:** Rectangle, Raycast, Bartender.
 - **Screen Recording:** Bartender (hidden icons), Slack (huddle screen-share). A logout may be
   required after granting Screen Recording.
 - **Input Monitoring:** Raycast.
-- **Notifications:** Outlook, Slack, Todoist.
-- **Contacts + Calendar:** Outlook.
+- **Notifications:** Outlook, Slack, Todoist, Fantastical.
+- **Contacts + Calendar:** Outlook, Fantastical.
 - **Microphone + Camera:** Slack (huddles).
 
 ### In-app one-time toggles
@@ -240,7 +253,5 @@ Mostly disabling self-updaters; the read-only store would break them anyway.
 - Update everything then rebuild: `nix flake update`.
 - Bump Homebrew itself: `nix flake update nix-homebrew`. Casks refresh on every rebuild
   (`homebrew.onActivation.upgrade = true`).
-- Bump a JetBrains plugin: update `url` + `hash` in `home.nix`. Find latest at
-  `https://plugins.jetbrains.com/api/plugins/<id>/updates`.
 - After a PyCharm minor-version bump (e.g. `2026.1 → 2026.2`): update the version-pinned keymap
   symlink path in `home.nix`, otherwise the keymap silently lands in the old unused directory.
