@@ -216,6 +216,10 @@ Not in nixpkgs. Registers a Login Items helper for "launch at login".
 Calendar app by Flexibits. Not in nixpkgs (commercial, closed-source). Free tier works without
 a Flexibits account; sign in for paid features. Registers a menu-bar item.
 
+### Spotify `(Homebrew)`
+Sandboxed bundle with a built-in Sparkle updater that can't write into the Nix store. The
+Homebrew cask refresh on rebuild keeps it current.
+
 ## First-use setup
 
 Run through these on a fresh machine after the first `darwin-rebuild switch`.
@@ -227,6 +231,7 @@ Run through these on a fresh machine after the first `darwin-rebuild switch`.
 - **Todoist** — Doist account.
 - **PyCharm Professional** — JetBrains licence.
 - **Fantastical** — Flexibits account (only needed for paid features).
+- **Spotify** — Spotify account.
 
 ### System permissions (System Settings → Privacy & Security)
 - **Accessibility:** Rectangle, Raycast, Bartender.
