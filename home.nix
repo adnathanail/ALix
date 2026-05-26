@@ -62,6 +62,7 @@
         ms-vscode-remote.remote-containers
         anthropic.claude-code
         ms-python.python
+        tomoki1207.pdf
       ];
       userSettings = {
         "nix.enableLanguageServer" = true;
@@ -69,6 +70,10 @@
         "git.enableSmartCommit" = true;
         "git.autofetch" = true;
         "git.confirmSync" = false;
+        # Extensions come from Nix; the store is read-only so VS Code's
+        # in-app updater can't write to them.
+        "extensions.autoUpdate" = false;
+        "extensions.autoCheckUpdates" = false;
       };
       keybindings = [
         { key = "cmd+s"; command = "workbench.action.files.saveAll"; }

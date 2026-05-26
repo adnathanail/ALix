@@ -131,9 +131,11 @@ Managed by `programs.vscode` under `profiles.default`. `settings.json` is Nix-ow
 `userSettings` in `home.nix`, not in-app. Extensions come from `pkgs.vscode-extensions` (resolve
 as `<publisher>.<name>`, e.g. `anthropic.claude-code`); for extensions not in the overlay set
 use `pkgs.vscode-utils.extensionFromVscodeMarketplace` with publisher, name, version, and SRI
-hash. Disable VS Code's in-app extension updater — the store is read-only. App lands at
-`~/Applications/Home Manager Apps/`; Spotlight and `open -a` still find it. First eval after
-adding it is slow because the marketplace overlay set is enormous; subsequent rebuilds are fine.
+hash. The in-app extension updater is disabled declaratively via
+`extensions.autoUpdate = false` and `extensions.autoCheckUpdates = false` in `userSettings`
+(the store is read-only). App lands at `~/Applications/Home Manager Apps/`; Spotlight and
+`open -a` still find it. First eval after adding it is slow because the marketplace overlay set
+is enormous; subsequent rebuilds are fine.
 
 ### PyCharm Professional `(Nix, unstable overlay, Nix-managed plugins + keymap)`
 Pulled from unstable because release-25.11 won't backport JetBrains minor-version bumps. Lands at
@@ -244,7 +246,6 @@ Run through these on a fresh machine after the first `darwin-rebuild switch`.
 
 ### In-app one-time toggles
 Mostly disabling self-updaters; the read-only store would break them anyway.
-- **VS Code:** disable in-app extension updater.
 - **PyCharm:** *Settings → Appearance & Behavior → System Settings → Updates* → uncheck
   "Check IDE updates for…"; also disable plugin auto-updater.
 - **PyCharm:** *Settings → Keymap* → select "Default for macOS copy" (the Nix-managed keymap).
