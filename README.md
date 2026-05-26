@@ -46,6 +46,7 @@ nix run nix-darwin/master#darwin-rebuild -- switch --flake ~/.config/nix-darwin
 - Slack
 - Fantastical
 - Spotify
+- WhatsApp
 
 ### Configuration/Tools
 
@@ -60,5 +61,6 @@ nix run nix-darwin/master#darwin-rebuild -- switch --flake ~/.config/nix-darwin
 - git
 - prek
 - python
+- node
 - gh (GitHub)
 - op (1Password)

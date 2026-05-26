@@ -41,6 +41,7 @@
     pkgs.jetbrains.pycharm
     pkgs.prek
     pkgs.python3
+    pkgs.nodejs
     pkgs.gh
     (pkgs.writeShellScriptBin "nix-switch" ''
       exec sudo darwin-rebuild switch --flake ~/.config/nix-darwin "$@"
