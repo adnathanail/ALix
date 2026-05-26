@@ -14,6 +14,7 @@
 
   programs.git = {
     enable = true;
+    lfs.enable = true;
     settings = {
       user = {
         name = "Alex Nathanail";
@@ -60,6 +61,7 @@
         jnoortheen.nix-ide
         ms-vscode-remote.remote-containers
         anthropic.claude-code
+        ms-python.python
       ];
       userSettings = {
         "nix.enableLanguageServer" = true;
@@ -68,6 +70,19 @@
         "git.autofetch" = true;
         "git.confirmSync" = false;
       };
+      keybindings = [
+        { key = "cmd+s"; command = "workbench.action.files.saveAll"; }
+        { key = "cmd+1"; command = "workbench.action.openEditorAtIndex1"; }
+        { key = "cmd+2"; command = "workbench.action.openEditorAtIndex2"; }
+        { key = "cmd+3"; command = "workbench.action.openEditorAtIndex3"; }
+        { key = "cmd+4"; command = "workbench.action.openEditorAtIndex4"; }
+        { key = "cmd+5"; command = "workbench.action.openEditorAtIndex5"; }
+        { key = "cmd+6"; command = "workbench.action.openEditorAtIndex6"; }
+        { key = "cmd+7"; command = "workbench.action.openEditorAtIndex7"; }
+        { key = "cmd+8"; command = "workbench.action.openEditorAtIndex8"; }
+        { key = "cmd+9"; command = "workbench.action.openEditorAtIndex9"; }
+        { key = "cmd+0"; command = "workbench.action.lastEditorInGroup"; }
+      ]; 
     };
   };
 }
