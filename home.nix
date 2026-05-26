@@ -12,6 +12,13 @@
   # you update it via Nix instead.
   home.sessionVariables.DISABLE_AUTOUPDATER = "1";
 
+  programs.zsh = {
+    enable = true;
+    shellAliases = {
+      ns = "nix-switch";
+    };
+  };
+
   programs.git = {
     enable = true;
     lfs.enable = true;

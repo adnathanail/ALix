@@ -4,7 +4,7 @@
 
 Rebuild `nix-darwin` config
 ```bash
-nix-switch
+ns  # alias for nix-switch
 ```
 
 ## First use
