@@ -53,10 +53,12 @@ nix run nix-darwin/master#darwin-rebuild -- switch --flake ~/.config/nix-darwin
 - Window tiling (Rectangle)
 - Raycast
 - Top left hot corner: Show desktop
+- Bottom left hot corner: Apps (Launchpad)
 
 ### CLIs
 
 - git
 - prek
 - python
-- gh
+- gh (GitHub)
+- op (1Password)
