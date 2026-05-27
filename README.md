@@ -43,6 +43,7 @@ nix run nix-darwin/master#darwin-rebuild -- switch --flake ~/.config/nix-darwin
 - Fantastical
 - Spotify
 - WhatsApp
+- Google Drive
 
 ### Configuration/Tools
 
