@@ -29,11 +29,7 @@ nix run nix-darwin/master#darwin-rebuild -- switch --flake ~/.config/nix-darwin
 ### Software
 
 - Claude Code
-- VS Code
-    - Plugins:
-        - Nix IDE
-        - Dev Containers
-        - Claude Code
+- VS Code (w/ plugins)
 - 1Password
 - PyCharm
     - *First use*:
