@@ -1,4 +1,10 @@
 { pkgs, ... }: {
+  # Optional feature modules. Comment a line to disable that feature on
+  # the next `ns` rebuild.
+  imports = [
+    ./rocq.nix
+  ];
+
   home.stateVersion = "25.11";
 
   programs.claude-code = {
@@ -64,6 +70,11 @@
 
   programs.vscode = {
     enable = true;
+    # HM fully owns ~/.vscode/extensions. VS Code's marketplace-install
+    # path can no longer rewrite extensions.json and desync the manifest
+    # from the on-disk symlinks. Trade-off: extensions can only be added
+    # by editing this file (or coq.nix etc.) and rebuilding.
+    mutableExtensionsDir = false;
     profiles.default = {
       extensions = with pkgs.vscode-extensions; [
         jnoortheen.nix-ide

@@ -62,3 +62,4 @@ nix run nix-darwin/master#darwin-rebuild -- switch --flake ~/.config/nix-darwin
 - node
 - gh (GitHub)
 - op (1Password)
+- Rocq (with std++ library)
