@@ -45,6 +45,7 @@ nix run nix-darwin/master#darwin-rebuild -- switch --flake ~/.config/nix-darwin
 - WhatsApp
 - Google Drive
 - Steam
+- Discord
 
 ### Configuration/Tools
 
