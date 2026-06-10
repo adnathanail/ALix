@@ -53,9 +53,9 @@ default is to manage all of that too, which collides (`error: Unexpected files i
   the Lix-generated `nix.conf` already `!include`s at the bottom.
 - Flakes + `nix-command` are already enabled globally by the installer.
 
-### nixpkgs on stable 25.11; Home Manager matched
-- `nixpkgs` is pinned to `nixpkgs-25.11-darwin`.
-- `home-manager` **must** track `release-25.11`. Using HM `master` against stable nixpkgs caused
+### nixpkgs on stable 26.05; Home Manager matched
+- `nixpkgs` is pinned to `nixpkgs-26.05-darwin`.
+- `home-manager` **must** track `release-26.05`. Using HM `master` against stable nixpkgs caused
   an eval failure (`lib/services/...: No such file or directory`) because master expects
   *unstable's* `lib`. **HM branch must match the nixpkgs branch.** If nixpkgs ever moves to
   unstable, move HM to `master` at the same time.
