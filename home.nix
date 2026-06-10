@@ -47,6 +47,7 @@
     pkgs.jetbrains.pycharm
     pkgs.prek
     pkgs.python3
+    pkgs.uv
     pkgs.nodejs
     pkgs.gh
     pkgs.postgresql
