@@ -47,6 +47,7 @@ nix run nix-darwin/master#darwin-rebuild -- switch --flake ~/.config/nix-darwin
 - Steam
 - Discord
 - CapCut
+- Zoom
 
 ### Configuration/Tools
 
