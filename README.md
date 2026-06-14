@@ -49,6 +49,7 @@ nix run nix-darwin/master#darwin-rebuild -- switch --flake ~/.config/nix-darwin
 - CapCut
 - Zoom
 - Audacity
+- VLC
 
 ### Configuration/Tools
 
