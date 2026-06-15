@@ -139,10 +139,7 @@
             onActivation = {
               autoUpdate = false;
               upgrade = true;
-              # `cleanup = "zap"` would uninstall anything not declared
-              # here. Leave at "none" until everything previously
-              # installed by hand is captured in this list.
-              cleanup = "none";
+              cleanup = "zap";  # Uninstalls everything not declared here
             };
             casks = [ "1password" "1password-cli" "orbstack" "raycast" "bartender" "ghostty" "microsoft-outlook" "slack" "todoist-app" "fantastical" "spotify" "whatsapp" "google-drive" "steam" "discord" "capcut" "zoom" "audacity" "vlc" ];
           };
