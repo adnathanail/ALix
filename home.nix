@@ -2,7 +2,8 @@
   # Optional feature modules. Comment a line to disable that feature on
   # the next `ns` rebuild.
   imports = [
-    ./rocq.nix
+    ./extra/rocq.nix
+    ./extra/eleventy.nix
   ];
 
   home.stateVersion = "25.11";
@@ -78,7 +79,7 @@
     # by editing this file (or coq.nix etc.) and rebuilding.
     mutableExtensionsDir = false;
     profiles.default = {
-      extensions = (with pkgs.vscode-extensions; [
+      extensions = with pkgs.vscode-extensions; [
         jnoortheen.nix-ide
         ms-vscode-remote.remote-containers
         anthropic.claude-code
@@ -86,13 +87,6 @@
         tomoki1207.pdf
         tamasfe.even-better-toml
         leanprover.lean4
-      ]) ++ pkgs.vscode-utils.extensionsFromVscodeMarketplace [
-        {
-          publisher = "ronnidc";
-          name = "nunjucks";
-          version = "0.3.1";
-          sha256 = "sha256-7YfmRMhC+HFmYgYtyHWrzSi7PZS3tdDHly9S1kDMmjY=";
-        }
       ];
       userSettings = {
         "nix.enableLanguageServer" = true;
