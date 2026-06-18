@@ -99,6 +99,12 @@
         "extensions.autoUpdate" = false;
         "extensions.autoCheckUpdates" = false;
         "lean4.alwaysAskBeforeInstallingLeanVersions" = false;
+        "github.copilot.enable" = {
+          "*" = false;
+          "plaintext" = false;
+          "markdown" = false;
+          "scminput" = false;
+        };
       };
       keybindings = [
         { key = "cmd+s"; command = "workbench.action.files.saveAll"; }
