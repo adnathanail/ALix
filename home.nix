@@ -96,7 +96,7 @@
         "git.confirmSync" = false;
         # Extensions come from Nix; the store is read-only so VS Code's
         # in-app updater can't write to them.
-        "extensions.autoUpdate" = false;
+        "extensions.autoUpdate" = "off";
         "extensions.autoCheckUpdates" = false;
         "lean4.alwaysAskBeforeInstallingLeanVersions" = false;
         "github.copilot.enable" = {

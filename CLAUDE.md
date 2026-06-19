@@ -132,7 +132,7 @@ Managed by `programs.vscode` under `profiles.default`. `settings.json` is Nix-ow
 as `<publisher>.<name>`, e.g. `anthropic.claude-code`); for extensions not in the overlay set
 use `pkgs.vscode-utils.extensionFromVscodeMarketplace` with publisher, name, version, and SRI
 hash. The in-app extension updater is disabled declaratively via
-`extensions.autoUpdate = false` and `extensions.autoCheckUpdates = false` in `userSettings`
+`extensions.autoUpdate = "off"` and `extensions.autoCheckUpdates = false` in `userSettings`
 (the store is read-only). App lands at `~/Applications/Home Manager Apps/`; Spotlight and
 `open -a` still find it. First eval after adding it is slow because the marketplace overlay set
 is enormous; subsequent rebuilds are fine.
