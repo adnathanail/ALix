@@ -19,6 +19,9 @@
   # you update it via Nix instead.
   home.sessionVariables.DISABLE_AUTOUPDATER = "1";
 
+  # Put `uv tool install` shims on PATH.
+  home.sessionPath = [ "$HOME/.local/bin" ];
+
   programs.zsh = {
     enable = true;
     shellAliases = {

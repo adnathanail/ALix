@@ -64,7 +64,7 @@ nix run nix-darwin/master#darwin-rebuild -- switch --flake ~/.config/nix-darwin
 - git
 - prek
 - python
-- uv (Python package/project manager)
+- uv (Python package/project manager) (uv tools added to path)
 - node
 - gh (GitHub)
 - op (1Password)
