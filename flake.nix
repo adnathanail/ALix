@@ -141,7 +141,7 @@
               upgrade = true;
               cleanup = "zap";  # Uninstalls everything not declared here
             };
-            casks = [ "1password" "1password-cli" "orbstack" "raycast" "bartender" "ghostty" "microsoft-outlook" "slack" "todoist-app" "fantastical" "spotify" "whatsapp" "google-drive" "steam" "discord" "capcut" "zoom" "audacity" "vlc" ];
+            casks = [ "1password" "1password-cli" "orbstack" "raycast" "bartender" "ghostty" "microsoft-outlook" "slack" "todoist-app" "fantastical" "spotify" "whatsapp" "google-drive" "steam" "discord" "capcut" "zoom" "audacity" "vlc" "gimp" ];
           };
         })
 
